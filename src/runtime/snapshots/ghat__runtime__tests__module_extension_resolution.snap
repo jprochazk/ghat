@@ -1,0 +1,33 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/_utils.ts ===
+export function label(): string { return "ubuntu-latest"; }
+=== /workflows/ci.ts ===
+import { label } from "./_utils";
+
+__define_workflow("CI", {
+    name: "CI",
+    on: { push: { branches: ["main"] } },
+    jobs: {
+        test: {
+            name: "test",
+            "runs-on": label(),
+            steps: [{ run: "echo ok" }]
+        }
+    }
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+    - run: echo ok

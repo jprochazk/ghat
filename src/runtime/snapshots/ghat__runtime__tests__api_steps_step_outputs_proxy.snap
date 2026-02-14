@@ -1,0 +1,33 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/ci.ts ===
+workflow("CI", {
+    on: triggers({ push: ["main"] }),
+    jobs(ctx) {
+        ctx.job("Test", {
+            runs_on: "ubuntu-latest",
+            steps(ctx) {
+                const co = uses("actions/checkout");
+                run(`echo checked out ${co.outputs.ref}`);
+            },
+        });
+    },
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: __step_0
+      uses: actions/checkout
+    - id: __step_1
+      run: echo checked out ${{ steps.__step_0.outputs.ref }}

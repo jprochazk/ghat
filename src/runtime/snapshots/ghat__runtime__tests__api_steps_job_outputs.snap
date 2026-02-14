@@ -1,0 +1,50 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/ci.ts ===
+workflow("CI", {
+    on: triggers({ push: ["main"] }),
+    jobs(ctx) {
+        const build = ctx.job("Build", {
+            runs_on: "ubuntu-latest",
+            steps(ctx) {
+                run("cargo build --release");
+                return { artifact: "build.tar.gz", version: "1.0.0" };
+            },
+        });
+
+        ctx.job("Deploy", {
+            runs_on: "ubuntu-latest",
+            needs: [build],
+            steps(ctx) {
+                run(`echo deploying ${ctx.needs.build.outputs.artifact}`);
+            },
+        });
+    },
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: build.tar.gz
+      version: 1.0.0
+    steps:
+    - id: __step_0
+      run: cargo build --release
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs:
+    - build
+    steps:
+    - id: __step_0
+      run: echo deploying ${{ needs.build.outputs.artifact }}

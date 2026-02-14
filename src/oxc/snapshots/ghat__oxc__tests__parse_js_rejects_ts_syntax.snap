@@ -1,0 +1,18 @@
+---
+source: src/oxc/tests.rs
+expression: "js_err(\"const x: number = 1;\\n\")"
+---
+
+  × Missing initializer in const declaration
+   ╭────
+ 1 │ const x: number = 1;
+   ·       ─
+   ╰────
+  help: Add an initializer (e.g. ` = undefined`) here
+
+  × Expected a semicolon or an implicit semicolon after a statement, but found none
+   ╭────
+ 1 │ const x: number = 1;
+   ·        ▲
+   ╰────
+  help: Try inserting a semicolon here

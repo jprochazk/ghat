@@ -1,0 +1,36 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/deploy.ts ===
+workflow("Deploy", {
+    on: triggers({
+        workflow_dispatch: {
+            inputs: {
+                env: { type: "choice", options: ["staging", "production"], required: true },
+            },
+        },
+    }),
+    run_name: (ctx) => `Deploy to ${ctx.inputs.env}`,
+    concurrency: (ctx) => ({ group: `deploy-${ctx.github.ref}`, cancel_in_progress: true }),
+    env: (ctx) => ({ TOKEN: `${ctx.secrets.GITHUB_TOKEN}` }),
+    jobs(ctx) {},
+});
+=== output ===
+# deploy
+name: Deploy
+run-name: Deploy to ${{ inputs.env }}
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        type: choice
+        required: true
+        options:
+        - staging
+        - production
+env:
+  TOKEN: ${{ secrets.GITHUB_TOKEN }}
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true

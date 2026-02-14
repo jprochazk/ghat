@@ -1,0 +1,5 @@
+---
+source: src/oxc/tests.rs
+expression: "ts_stripped(\"const x: number = 42;\\n\")"
+---
+const x = 42;

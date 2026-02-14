@@ -1,0 +1,20 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_err(files, &err)"
+---
+=== /workflows/bad.ts ===
+workflow("Bad", {
+    on: triggers({ push: ["main"] }),
+    env: (ctx) => ({ FOO: `${ctx.matrix.os}` }),
+    jobs(ctx) {},
+});
+=== error ===
+
+  x context 'matrix' is not available in 'Bad > env' (available: github,
+  | secrets, inputs, vars)
+   ,-[/workflows/bad.ts:4:1]
+ 3 |     on: triggers({ push: ["main"] }),
+ 4 |     env: (ctx) => ({ FOO: `${ctx.matrix.os}` }),
+   : ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 5 |     jobs(ctx) {},
+   `----

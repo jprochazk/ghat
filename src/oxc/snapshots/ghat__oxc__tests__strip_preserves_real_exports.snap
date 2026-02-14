@@ -1,0 +1,6 @@
+---
+source: src/oxc/tests.rs
+expression: "ts_stripped(\"export const x: number = 1;\\nexport default function foo(): void {}\\n\")"
+---
+export const x = 1;
+export default function foo() {}

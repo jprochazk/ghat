@@ -1,0 +1,5 @@
+---
+source: src/oxc/tests.rs
+expression: "js(\"const x = 1 + 2;\\n\")"
+---
+const x = 1 + 2;

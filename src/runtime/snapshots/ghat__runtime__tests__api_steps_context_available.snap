@@ -1,0 +1,30 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/ci.ts ===
+workflow("CI", {
+    on: triggers({ push: ["main"] }),
+    jobs(ctx) {
+        ctx.job("Test", {
+            runs_on: "ubuntu-latest",
+            steps(ctx) {
+                run(`echo sha=${ctx.github.sha} runner=${ctx.runner.os} secret=${ctx.secrets.TOKEN}`);
+            },
+        });
+    },
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: __step_0
+      run: echo sha=${{ github.sha }} runner=${{ runner.os }} secret=${{ secrets.TOKEN }}

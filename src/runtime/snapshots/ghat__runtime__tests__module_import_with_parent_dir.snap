@@ -1,0 +1,33 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /shared/helpers.ts ===
+export function greeting(): string { return "hello"; }
+=== /workflows/ci.ts ===
+import { greeting } from "../shared/helpers.ts";
+
+__define_workflow("CI", {
+    name: "CI",
+    on: { push: { branches: ["main"] } },
+    jobs: {
+        greet: {
+            name: "greet",
+            "runs-on": "ubuntu-latest",
+            steps: [{ run: greeting() }]
+        }
+    }
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  greet:
+    name: greet
+    runs-on: ubuntu-latest
+    steps:
+    - run: hello

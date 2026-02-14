@@ -1,0 +1,7 @@
+---
+source: src/oxc/tests.rs
+expression: "js(\"function add(a, b) { return a + b; }\\n\")"
+---
+function add(a, b) {
+	return a + b;
+}

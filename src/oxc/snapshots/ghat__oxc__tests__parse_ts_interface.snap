@@ -1,0 +1,5 @@
+---
+source: src/oxc/tests.rs
+expression: "ts_stripped(\"interface Foo { bar: string; baz: number; }\\nconst a = 1;\\n\")"
+---
+const a = 1;

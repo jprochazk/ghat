@@ -1,0 +1,9 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_err(files, &err)"
+---
+=== /workflows/bad.js ===
+import { foo } from "./_nonexistent.js";
+foo();
+=== error ===
+Error loading module '/workflows/_nonexistent.js': /workflows/_nonexistent.js

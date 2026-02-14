@@ -1,0 +1,36 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/typed.ts ===
+interface Config {
+    name: string;
+    branch: string;
+}
+
+const config: Config = { name: "typed", branch: "main" };
+
+__define_workflow(config.name, {
+    name: config.name,
+    on: { push: { branches: [config.branch] } },
+    jobs: {
+        check: {
+            name: "check",
+            "runs-on": "ubuntu-latest",
+            steps: [{ run: "cargo check" }]
+        }
+    }
+});
+=== output ===
+# typed
+name: typed
+on:
+  push:
+    branches:
+    - main
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    steps:
+    - run: cargo check

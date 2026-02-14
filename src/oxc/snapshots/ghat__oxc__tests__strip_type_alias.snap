@@ -1,0 +1,5 @@
+---
+source: src/oxc/tests.rs
+expression: "ts_stripped(\"type MyType = string | number;\\nconst y = 'hello';\\n\")"
+---
+const y = "hello";

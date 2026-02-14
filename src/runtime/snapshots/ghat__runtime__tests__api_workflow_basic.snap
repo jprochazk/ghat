@@ -1,0 +1,18 @@
+---
+source: src/runtime/tests.rs
+expression: "snapshot_yaml(files, rt)"
+---
+=== /workflows/ci.ts ===
+workflow("CI", {
+    on: triggers({
+        push: ["main"],
+    }),
+    jobs(ctx) {},
+});
+=== output ===
+# ci
+name: CI
+on:
+  push:
+    branches:
+    - main

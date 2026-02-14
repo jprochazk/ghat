@@ -1,0 +1,18 @@
+---
+source: tests/e2e.rs
+expression: snapshot
+---
+exit_code: 0
+---generated_ci.yaml---
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - id: __step_0
+      run: echo hello

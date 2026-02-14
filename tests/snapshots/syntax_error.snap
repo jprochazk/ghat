@@ -1,0 +1,12 @@
+---
+source: tests/e2e.rs
+expression: snapshot
+---
+exit_code: 1
+---stderr---
+Error: 
+  x expecting ';'
+  | 
+  | Stack trace:
+  |     at .github/ghat/workflows/bad.ts:7:7
+  |

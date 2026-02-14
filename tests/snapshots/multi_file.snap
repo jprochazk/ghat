@@ -1,0 +1,21 @@
+---
+source: tests/e2e.rs
+expression: snapshot
+---
+exit_code: 0
+---generated_ci.yaml---
+name: CI
+on:
+  push:
+    branches:
+    - main
+  pull_request:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: __step_0
+      run: cargo test --all-features

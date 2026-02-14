@@ -1,0 +1,5 @@
+---
+source: src/oxc/tests.rs
+expression: "ts_stripped(\"import type { Foo } from './foo';\\nconst x: Foo = { bar: 1 };\\n\")"
+---
+const x = { bar: 1 };
