@@ -2,8 +2,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-fn run_fixture(path: &Path) -> datatest_stable::Result<()> {
-    let fixture_dir = path.parent().unwrap();
+fn run_fixture(fixture_dir: &Path) {
     let fixture_name = fixture_dir.file_name().unwrap().to_str().unwrap();
     let workflows_src = fixture_dir.join("workflows");
     assert!(
@@ -67,8 +66,6 @@ fn run_fixture(path: &Path) -> datatest_stable::Result<()> {
     settings.bind(|| {
         insta::assert_snapshot!(fixture_name, snapshot);
     });
-
-    Ok(())
 }
 
 fn copy_dir_recursive(src: &Path, dst: &Path) {
@@ -84,6 +81,7 @@ fn copy_dir_recursive(src: &Path, dst: &Path) {
     }
 }
 
-datatest_stable::harness! {
-    { test = run_fixture, root = "tests/fixtures", pattern = r"test\.marker$" },
+#[glob_test::glob("./fixtures/*")]
+fn fixture(path: &Path) {
+    run_fixture(path);
 }

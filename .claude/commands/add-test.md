@@ -3,7 +3,6 @@ Create one or more e2e test fixtures for the ghat CLI.
 ## How e2e tests work
 
 Tests live in `tests/fixtures/`. Each fixture is a directory containing:
-- `test.marker` — empty file that the test harness uses for discovery
 - `workflows/` — directory with `.ts` and/or `.js` workflow definition files
 
 Files starting with `_` (e.g. `_utils.ts`) are reusable modules — they won't be evaluated directly by `ghat generate` but can be imported by other workflow files.
@@ -22,7 +21,7 @@ The description may contain multiple test cases (comma-separated, numbered, or o
 
 For each fixture:
 1. Pick a descriptive snake_case name
-2. Create `tests/fixtures/{name}/test.marker` (empty file)
+2. Create `tests/fixtures/{name}` (empty dir)
 3. Create the `.ts`/`.js` files under `tests/fixtures/{name}/workflows/`
 
 After creating all fixtures:
