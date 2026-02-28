@@ -1,0 +1,63 @@
+---
+source: src/github.rs
+expression: manifest
+---
+ActionManifest {
+    name: "Rust Cache",
+    description: Some(
+        "A GitHub Action that implements smart caching for rust/cargo projects.",
+    ),
+    inputs: {
+        "prefix-key": ActionInput {
+            description: Some(
+                "The prefix cache key.",
+            ),
+            required: Some(
+                false,
+            ),
+            default: Some(
+                "v0-rust",
+            ),
+            deprecation_message: None,
+        },
+        "shared-key": ActionInput {
+            description: Some(
+                "A shared cache key stable over multiple jobs.",
+            ),
+            required: Some(
+                false,
+            ),
+            default: None,
+            deprecation_message: None,
+        },
+        "cache-on-failure": ActionInput {
+            description: Some(
+                "Cache even if the build fails.",
+            ),
+            required: Some(
+                false,
+            ),
+            default: None,
+            deprecation_message: None,
+        },
+        "save-if": ActionInput {
+            description: Some(
+                "Whether the cache should be saved.",
+            ),
+            required: Some(
+                false,
+            ),
+            default: Some(
+                "true",
+            ),
+            deprecation_message: None,
+        },
+    },
+    outputs: {
+        "cache-hit": ActionOutput {
+            description: Some(
+                "A boolean value that indicates an exact match was found.",
+            ),
+        },
+    },
+}

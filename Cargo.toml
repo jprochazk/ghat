@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-clap = { version = "4.5.58", features = ["derive"] }
+clap = { version = "4.5.58", features = ["derive", "env"] }
 env_logger = "0.11.9"
 indexmap = { version = "2.13.0", features = ["serde"] }
 log = "0.4.29"
@@ -22,7 +22,9 @@ rquickjs = { version = "0.11.0", features = ["bindgen", "loader"] }
 rquickjs-serde = "0.5.0"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
+semver = "1"
 serde_yaml_ng = "0.10.0"
+ureq = { version = "3.2.0", features = ["json"] }
 
 [dev-dependencies]
 glob_test = "0.2"

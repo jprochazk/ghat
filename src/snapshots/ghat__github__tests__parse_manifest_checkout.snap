@@ -1,0 +1,62 @@
+---
+source: src/github.rs
+expression: manifest
+---
+ActionManifest {
+    name: "Checkout",
+    description: Some(
+        "Checkout a Git repository at a particular version",
+    ),
+    inputs: {
+        "repository": ActionInput {
+            description: Some(
+                "Repository name with owner. For example, actions/checkout",
+            ),
+            required: None,
+            default: Some(
+                "${{ github.repository }}",
+            ),
+            deprecation_message: None,
+        },
+        "ref": ActionInput {
+            description: Some(
+                "The branch, tag or SHA to checkout.",
+            ),
+            required: None,
+            default: None,
+            deprecation_message: None,
+        },
+        "token": ActionInput {
+            description: Some(
+                "Personal access token (PAT) used to fetch the repository.",
+            ),
+            required: None,
+            default: Some(
+                "${{ github.token }}",
+            ),
+            deprecation_message: None,
+        },
+        "fetch-depth": ActionInput {
+            description: Some(
+                "Number of commits to fetch. 0 indicates all history for all branches and tags.",
+            ),
+            required: None,
+            default: Some(
+                "1",
+            ),
+            deprecation_message: None,
+        },
+    },
+    outputs: {
+        "ref": ActionOutput {
+            description: Some(
+                "The branch, tag or SHA that was checked out",
+            ),
+        },
+        "commit": ActionOutput {
+            description: Some(
+                "The commit SHA that was checked out",
+            ),
+        },
+    },
+}

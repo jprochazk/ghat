@@ -1,3 +1,5 @@
+pub mod add;
+pub mod common;
 pub mod generate;
 pub mod init;
 
@@ -9,6 +11,10 @@ struct Cli {
     /// Enable verbose output (-v for debug, -vv for trace)
     #[arg(short, long, action = clap::ArgAction::Count, global = true)]
     verbose: u8,
+
+    /// GitHub API token
+    #[arg(long, global = true, env = "GITHUB_TOKEN")]
+    github_token: Option<String>,
 
     #[command(subcommand)]
     command: Command,
@@ -68,7 +74,7 @@ pub fn entrypoint() -> miette::Result<()> {
 
     match cli.command {
         Command::Init => init::run(),
-        Command::Add { actions, auto } => todo!("add: {actions:?}, auto: {auto}"),
+        Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
         Command::Rm { actions } => todo!("rm: {actions:?}"),
         Command::Update { actions } => todo!("update: {actions:?}"),
         Command::Generate => generate::run(),
