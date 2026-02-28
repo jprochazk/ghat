@@ -1,0 +1,7 @@
+---
+source: tests/cmd_init.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+initialized ghat project in .github/ghat

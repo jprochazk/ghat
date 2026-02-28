@@ -1,9 +1,8 @@
 ---
-source: tests/e2e.rs
-expression: snapshot
+source: tests/cmd_generate.rs
+expression: value
 ---
-exit_code: 0
----generated_ci.yaml---
+--- .github/workflows/generated_ci.yaml ---
 name: CI
 on:
   push:

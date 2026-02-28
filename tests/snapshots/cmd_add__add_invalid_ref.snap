@@ -1,0 +1,8 @@
+---
+source: tests/cmd_add.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x invalid action reference: expected `owner/repo`, got: invalid

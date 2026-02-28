@@ -570,7 +570,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "env_logger",
- "glob_test",
+ "glob",
  "indexmap",
  "insta",
  "log",
@@ -590,6 +590,7 @@ dependencies = [
  "serde",
  "serde_json",
  "serde_yaml_ng",
+ "similar",
  "tempfile",
  "ureq",
 ]
@@ -605,16 +606,6 @@ name = "glob"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
-
-[[package]]
-name = "glob_test"
-version = "0.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ffbfbcba9b39e25b5beff15de9033a7b1de1cb0740a3962795dd289e1f4ff09b"
-dependencies = [
- "glob",
- "proc-macro2",
-]
 
 [[package]]
 name = "hashbrown"

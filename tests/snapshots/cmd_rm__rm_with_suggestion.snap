@@ -1,0 +1,8 @@
+---
+source: tests/cmd_rm.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x actions/checkotu not found in lockfile (did you mean `actions/checkout`?)

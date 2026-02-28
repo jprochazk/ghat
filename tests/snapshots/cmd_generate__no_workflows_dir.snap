@@ -1,0 +1,8 @@
+---
+source: tests/cmd_generate.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x workflows directory not found: .github/ghat/workflows

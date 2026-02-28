@@ -1,0 +1,8 @@
+---
+source: tests/cmd_update.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x actions not found in lockfile: nonexistent/action

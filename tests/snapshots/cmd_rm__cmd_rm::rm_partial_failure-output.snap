@@ -1,0 +1,8 @@
+---
+source: tests/cmd_rm.rs
+expression: value
+---
+exit_code: 1
+---stderr---
+Error: 
+  x nonexistent/action not found in lockfile

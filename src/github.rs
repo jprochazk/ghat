@@ -286,13 +286,21 @@ fn resolve_tag_to_sha(
 pub struct GitHubClient {
     agent: ureq::Agent,
     token: Option<String>,
+    api_base: String,
+    content_base: String,
 }
 
 impl GitHubClient {
     pub fn new(token: Option<String>) -> Self {
+        let api_base = std::env::var("__GHAT_TEST_GITHUB_API_URL")
+            .unwrap_or_else(|_| "https://api.github.com".to_string());
+        let content_base = std::env::var("__GHAT_TEST_GITHUB_CONTENT_URL")
+            .unwrap_or_else(|_| "https://raw.githubusercontent.com".to_string());
         Self {
             agent: ureq::Agent::new_with_defaults(),
             token,
+            api_base,
+            content_base,
         }
     }
 
@@ -315,7 +323,7 @@ impl GitHubClient {
     }
 
     fn get<T: serde::de::DeserializeOwned>(&self, path: &str) -> miette::Result<T> {
-        let url = format!("https://api.github.com{path}");
+        let url = format!("{}{path}", self.api_base);
         let mut req = self.agent.get(&url);
 
         if let Some(token) = &self.token {
@@ -411,7 +419,7 @@ impl GitHubApi for GitHubClient {
         owner: &str,
         repo: &str,
     ) -> miette::Result<Box<dyn Iterator<Item = miette::Result<Vec<Release>>> + '_>> {
-        let url = format!("https://api.github.com/repos/{owner}/{repo}/releases?per_page=100");
+        let url = format!("{}/repos/{owner}/{repo}/releases?per_page=100", self.api_base);
         Ok(Box::new(ReleasePaginator {
             client: self,
             next_url: Some(url),
@@ -433,7 +441,8 @@ impl GitHubApi for GitHubClient {
         version: &str,
     ) -> miette::Result<ActionManifest> {
         let yaml = self.get_raw(&format!(
-            "https://raw.githubusercontent.com/{owner}/{repo}/{version}/action.yml"
+            "{}/{owner}/{repo}/{version}/action.yml",
+            self.content_base
         ))?;
         serde_yaml_ng::from_str(&yaml).map_err(|e| {
             miette::miette!("failed to parse action.yml for {owner}/{repo}@{version}: {e}")

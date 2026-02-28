@@ -1,0 +1,10 @@
+---
+source: tests/cmd_add.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x lockfile not found: .github/ghat/ghat.lock
+  | 
+  | Run `ghat init` first to initialize the project.

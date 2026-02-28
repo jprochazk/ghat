@@ -1,0 +1,8 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+--- a/.github/ghat/ghat.lock
++++ b/.github/ghat/ghat.lock
+@@ -0,0 +1 @@
++actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683

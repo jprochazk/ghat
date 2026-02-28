@@ -1,0 +1,5 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+exit_code: 0

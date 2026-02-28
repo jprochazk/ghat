@@ -1,0 +1,8 @@
+---
+source: tests/cmd_rm.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+removed actions/checkout
+removed Swatinem/rust-cache

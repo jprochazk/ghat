@@ -1,0 +1,12 @@
+---
+source: tests/cmd_init.rs
+expression: value
+---
+--- .github/ghat/ghat.lock ---
+
+--- .github/ghat/tsconfig.json ---
+[297 bytes]
+--- .github/ghat/types/api.d.ts ---
+[37981 bytes]
+--- .github/ghat/types/workflow.d.ts ---
+[2764 bytes]

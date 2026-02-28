@@ -1,0 +1,7 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+skipped actions/checkout (already in lockfile)
