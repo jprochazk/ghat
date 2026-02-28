@@ -2,6 +2,8 @@ pub mod add;
 pub mod common;
 pub mod generate;
 pub mod init;
+pub mod rm;
+pub mod update;
 
 use clap::{Parser, Subcommand};
 
@@ -45,10 +47,14 @@ enum Command {
         actions: Vec<String>,
     },
 
-    /// Update actions to their latest version
+    /// Update actions to their latest compatible version
     Update {
         /// Actions to update (all if omitted)
         actions: Vec<String>,
+
+        /// Allow breaking (major) version updates
+        #[arg(long)]
+        breaking: bool,
     },
 
     /// Generate workflow files from definitions
@@ -75,8 +81,10 @@ pub fn entrypoint() -> miette::Result<()> {
     match cli.command {
         Command::Init => init::run(),
         Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
-        Command::Rm { actions } => todo!("rm: {actions:?}"),
-        Command::Update { actions } => todo!("update: {actions:?}"),
+        Command::Rm { actions } => rm::run(actions),
+        Command::Update { actions, breaking } => {
+            update::run(actions, breaking, cli.github_token)
+        }
         Command::Generate => generate::run(),
         Command::Check => todo!("check"),
     }

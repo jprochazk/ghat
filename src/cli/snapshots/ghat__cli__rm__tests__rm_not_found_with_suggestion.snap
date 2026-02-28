@@ -1,0 +1,5 @@
+---
+source: src/cli/rm.rs
+expression: err
+---
+actions/checkotu not found in lockfile (did you mean `actions/checkout`?)

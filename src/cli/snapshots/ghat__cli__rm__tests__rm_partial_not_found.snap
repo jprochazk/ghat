@@ -1,0 +1,5 @@
+---
+source: src/cli/rm.rs
+expression: err
+---
+nonexistent/action not found in lockfile
