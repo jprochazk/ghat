@@ -24,8 +24,8 @@ fn project_with_two_actions() -> TestProject {
 }
 
 const TWO_ACTIONS: &str = "\
-Swatinem/rust-cache v2.7.8 9d47c6ad4b02e050fd481d890b2ea34778fd09d6
-actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683
+Swatinem/rust-cache tag:v2.7.8 9d47c6ad4b02e050fd481d890b2ea34778fd09d6
+actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683
 ";
 
 #[test]

@@ -15,6 +15,8 @@ pub struct MockAction {
     pub refs: HashMap<String, (String, String)>,
     /// Map from tag object SHA to commit SHA (for annotated tags).
     pub tags: HashMap<String, String>,
+    /// Map from branch name to commit SHA.
+    pub branch_refs: HashMap<String, String>,
     /// Optional action.yml content keyed by version.
     pub manifests: HashMap<String, String>,
 }
@@ -127,6 +129,13 @@ fn build_routes(actions: &[MockAction]) -> HashMap<String, (u16, String)> {
         for (tag, (object_type, sha)) in &action.refs {
             let path = format!("/repos/{owner}/{repo}/git/ref/tags/{tag}");
             let body = format!(r#"{{"object":{{"sha":"{sha}","type":"{object_type}"}}}}"#);
+            routes.insert(path, (200, body));
+        }
+
+        // GET /repos/{owner}/{repo}/git/ref/heads/{branch}
+        for (branch, sha) in &action.branch_refs {
+            let path = format!("/repos/{owner}/{repo}/git/ref/heads/{branch}");
+            let body = format!(r#"{{"object":{{"sha":"{sha}","type":"commit"}}}}"#);
             routes.insert(path, (200, body));
         }
 
@@ -268,6 +277,7 @@ outputs:
         ],
         refs,
         tags: HashMap::new(),
+        branch_refs: HashMap::new(),
         manifests,
     }
 }
@@ -358,6 +368,52 @@ outputs:
         ],
         refs,
         tags,
+        branch_refs: HashMap::new(),
+        manifests,
+    }
+}
+
+/// dtolnay/rust-toolchain — uses branch refs (e.g. "stable", "nightly")
+pub fn mock_rust_toolchain() -> MockAction {
+    let mut branch_refs = HashMap::new();
+    branch_refs.insert(
+        "stable".into(),
+        "a3b77706cfa4c4bf431a39f7e267c878effdf858".into(),
+    );
+    branch_refs.insert(
+        "nightly".into(),
+        "b5e4cbcd8cdd1d1f4ee1efb08a5eb44ee7e2dbc0".into(),
+    );
+
+    let mut manifests = HashMap::new();
+    let toolchain_manifest = r#"
+name: Install Rust Toolchain
+description: Install a Rust toolchain.
+inputs:
+  toolchain:
+    description: Rust toolchain specification.
+    required: false
+  components:
+    description: Comma-separated list of components to install.
+    required: false
+  targets:
+    description: Comma-separated list of target triples to install.
+    required: false
+outputs:
+  cachekey:
+    description: A short hash of the installed rustc version.
+"#;
+    manifests.insert("stable".into(), toolchain_manifest.to_string());
+    manifests.insert("nightly".into(), toolchain_manifest.to_string());
+
+    MockAction {
+        owner: "dtolnay".into(),
+        repo: "rust-toolchain".into(),
+        latest_release: "".into(),
+        all_releases: vec![],
+        refs: HashMap::new(),
+        tags: HashMap::new(),
+        branch_refs,
         manifests,
     }
 }

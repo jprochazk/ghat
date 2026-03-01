@@ -4,4 +4,4 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-initialized ghat project in .github/ghat
+ Initialized ghat project in .github/ghat

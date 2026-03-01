@@ -101,6 +101,94 @@ workflow("CI", {
 }
 
 #[test]
+fn pins_actions_to_lockfile_sha() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/ghat.lock",
+            "actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
+        )
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        uses("actions/checkout")
+        run("echo hello")
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate", "--no-check"]).run();
+    snapshot!("output", output);
+    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+}
+
+#[test]
+fn unlocked_action_fails() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        uses("actions/checkout")
+        run("echo hello")
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate", "--no-check"]).run();
+    snapshot!(output);
+}
+
+#[test]
+fn dedents_multiline_run() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        run(`
+          echo "step 1"
+          if true; then
+            echo "step 2"
+          fi
+        `)
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!("output", output);
+    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+}
+
+#[test]
 fn syntax_error() {
     let p = TestProject::new()
         .init()

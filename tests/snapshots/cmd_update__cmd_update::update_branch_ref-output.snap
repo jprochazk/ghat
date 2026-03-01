@@ -1,0 +1,7 @@
+---
+source: tests/cmd_update.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+     Updated dtolnay/rust-toolchain stable -> stable (a3b77706cfa4)

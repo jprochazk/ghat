@@ -81,7 +81,7 @@ pub fn run(actions: Vec<String>) -> miette::Result<()> {
         match r {
             RmResult::Removed { name } => {
                 codegen::remove_action_types(base, name)?;
-                eprintln!("removed {name}");
+                super::style::status("Removed", name);
             }
         }
     }
@@ -94,13 +94,14 @@ pub fn run(actions: Vec<String>) -> miette::Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::lockfile::LockedAction;
+    use crate::lockfile::{LockedAction, RefKind};
 
     fn test_lockfile() -> Lockfile {
         let mut lockfile = Lockfile::new();
         lockfile.actions.insert(
             "actions/checkout".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v4.2.2".into(),
                 sha: "11bd71901bbe5b1630ceea73d27597364c9af683".into(),
             },
@@ -108,6 +109,7 @@ mod tests {
         lockfile.actions.insert(
             "Swatinem/rust-cache".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v2.7.8".into(),
                 sha: "9d47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
             },

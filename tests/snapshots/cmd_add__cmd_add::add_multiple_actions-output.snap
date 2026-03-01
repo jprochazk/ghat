@@ -4,5 +4,5 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-added actions/checkout v4.2.2 (11bd71901bbe)
-added Swatinem/rust-cache v2.7.8 (9d47c6ad4b02)
+       Added actions/checkout v4.2.2 (11bd71901bbe)
+       Added Swatinem/rust-cache v2.7.8 (9d47c6ad4b02)

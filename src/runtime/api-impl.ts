@@ -200,10 +200,35 @@ declare global {
     return { outputs: outputs_proxy };
   }
 
+  function dedent(text: string): string {
+    // Strip leading blank line (from template literals starting with newline)
+    let s = text;
+    if (s.length > 0 && s[0] === "\n") s = s.slice(1);
+    const lines = s.split("\n");
+    // Find minimum indentation of non-empty lines
+    let min = -1;
+    for (const line of lines) {
+      if (line.trim().length === 0) continue;
+      let indent = 0;
+      while (indent < line.length && (line[indent] === " " || line[indent] === "\t")) indent++;
+      if (min === -1 || indent < min) min = indent;
+    }
+    if (min > 0) {
+      s = lines.map((line) => line.slice(min)).join("\n");
+    }
+    // Strip trailing whitespace-only line
+    if (s.endsWith("\n")) {
+      let i = s.length - 2;
+      while (i >= 0 && (s[i] === " " || s[i] === "\t")) i--;
+      if (i >= 0 && s[i] === "\n") s = s.slice(0, i + 1) + "\n";
+    }
+    return s;
+  }
+
   function run_builtin(script: string, options?: RunOptions): StepRef {
     if (current_steps == null) throw new Error("run() can only be called inside steps()");
     const step_id = next_step_id();
-    const step: Output.Step = { id: step_id, run: script, ...map_step_options(options) };
+    const step: Output.Step = { id: step_id, run: dedent(script), ...map_step_options(options) };
     current_steps.push(step);
     return register_step_outputs(step_id);
   }

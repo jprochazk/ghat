@@ -455,6 +455,7 @@ mod tests {
         lockfile.actions.insert(
             "test/action".into(),
             crate::lockfile::LockedAction {
+                ref_kind: crate::lockfile::RefKind::Tag,
                 version: "v1.0.0".into(),
                 sha: "abc123".into(),
             },
@@ -492,6 +493,7 @@ mod tests {
         lockfile.actions.insert(
             "org/simple".into(),
             crate::lockfile::LockedAction {
+                ref_kind: crate::lockfile::RefKind::Tag,
                 version: "v1.0.0".into(),
                 sha: "def456".into(),
             },
@@ -529,6 +531,7 @@ mod tests {
         lockfile.actions.insert(
             "test/action".into(),
             crate::lockfile::LockedAction {
+                ref_kind: crate::lockfile::RefKind::Tag,
                 version: "v2.0.0".into(),
                 sha: "sha2".into(),
             },

@@ -5,5 +5,5 @@ expression: value
 --- a/.github/ghat/ghat.lock
 +++ b/.github/ghat/ghat.lock
 @@ -1 +1 @@
--Swatinem/rust-cache v1.4.0 cd47c6ad4b02e050fd481d890b2ea34778fd09d6
-+Swatinem/rust-cache v2.7.8 9d47c6ad4b02e050fd481d890b2ea34778fd09d6
+-Swatinem/rust-cache tag:v1.4.0 cd47c6ad4b02e050fd481d890b2ea34778fd09d6
++Swatinem/rust-cache tag:v2.7.8 9d47c6ad4b02e050fd481d890b2ea34778fd09d6

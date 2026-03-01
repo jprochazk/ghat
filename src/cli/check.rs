@@ -172,6 +172,6 @@ fn line_col_to_offset(source: &str, line: u32, col: u32) -> usize {
 pub fn run() -> miette::Result<()> {
     typecheck()?;
     let _workflows = super::common::eval_workflow_definitions()?;
-    eprintln!("check passed");
+    super::style::status("Finished", "check passed");
     Ok(())
 }

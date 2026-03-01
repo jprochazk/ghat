@@ -1,0 +1,205 @@
+{
+  "Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5": {
+    "name": "Rust Cache",
+    "description": "A GitHub Action that implements smart caching for rust/cargo projects with sensible defaults.",
+    "inputs": {
+      "prefix-key": {
+        "description": "The prefix cache key, this can be changed to start a new cache manually.",
+        "required": false,
+        "default": "v0-rust"
+      },
+      "shared-key": {
+        "description": "A cache key that is used instead of the automatic `job`-based key, and is stable over multiple jobs.",
+        "required": false
+      },
+      "key": {
+        "description": "An additional cache key that is added alongside the automatic `job`-based cache key and can be used to further differentiate jobs.",
+        "required": false
+      },
+      "add-job-id-key": {
+        "description": "If the automatic `job`-based cache key should include the job id. Defaults to true.",
+        "required": false,
+        "default": "true"
+      },
+      "add-rust-environment-hash-key": {
+        "description": "Weather the a hash of the rust environment should be included in the cache key. This includes a hash of all Cargo.toml/Cargo.lock files, rust-toolchain files, and .cargo/config.toml files (if present), as well as the specified 'env-vars'. Defaults to true.",
+        "required": false,
+        "default": "true"
+      },
+      "env-vars": {
+        "description": "Additional environment variables to include in the cache key, separated by spaces.",
+        "required": false
+      },
+      "workspaces": {
+        "description": "Paths to multiple Cargo workspaces and their target directories, separated by newlines.",
+        "required": false
+      },
+      "cache-directories": {
+        "description": "Additional non workspace directories to be cached, separated by newlines.",
+        "required": false
+      },
+      "cache-targets": {
+        "description": "Determines whether workspace targets are cached. If `false`, only the cargo registry will be cached.",
+        "required": false,
+        "default": "true"
+      },
+      "cache-on-failure": {
+        "description": "Cache even if the build fails. Defaults to false.",
+        "required": false
+      },
+      "cache-all-crates": {
+        "description": "Determines which crates are cached. If `true` all crates will be cached, otherwise only dependent crates will be cached.",
+        "required": false,
+        "default": "false"
+      },
+      "cache-workspace-crates": {
+        "description": "Similar to cache-all-crates. If `true` the workspace crates will be cached.",
+        "required": false,
+        "default": "false"
+      },
+      "save-if": {
+        "description": "Determiners whether the cache should be saved. If `false`, the cache is only restored.",
+        "required": false,
+        "default": "true"
+      },
+      "cache-provider": {
+        "description": "Determines which provider to use for caching. Options are github, buildjet, or warpbuild. Defaults to github.",
+        "required": false,
+        "default": "github"
+      },
+      "cache-bin": {
+        "description": "Determines whether to cache ${CARGO_HOME}/bin.",
+        "required": false,
+        "default": "true"
+      },
+      "lookup-only": {
+        "description": "Check if a cache entry exists without downloading the cache",
+        "required": false,
+        "default": "false"
+      }
+    },
+    "outputs": {
+      "cache-hit": {
+        "description": "A boolean value that indicates an exact match was found."
+      }
+    }
+  },
+  "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd": {
+    "name": "Checkout",
+    "description": "Checkout a Git repository at a particular version",
+    "inputs": {
+      "repository": {
+        "description": "Repository name with owner. For example, actions/checkout",
+        "default": "${{ github.repository }}"
+      },
+      "ref": {
+        "description": "The branch, tag or SHA to checkout. When checking out the repository that triggered a workflow, this defaults to the reference or SHA for that event.  Otherwise, uses the default branch.\n"
+      },
+      "token": {
+        "description": "Personal access token (PAT) used to fetch the repository. The PAT is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the PAT.\n\nWe recommend using a service account with the least permissions necessary. Also when generating a new PAT, select the least scopes necessary.\n\n[Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)\n",
+        "default": "${{ github.token }}"
+      },
+      "ssh-key": {
+        "description": "SSH key used to fetch the repository. The SSH key is configured with the local git config, which enables your scripts to run authenticated git commands. The post-job step removes the SSH key.\n\nWe recommend using a service account with the least permissions necessary.\n\n[Learn more about creating and using encrypted secrets](https://help.github.com/en/actions/automating-your-workflow-with-github-actions/creating-and-using-encrypted-secrets)\n"
+      },
+      "ssh-known-hosts": {
+        "description": "Known hosts in addition to the user and global host key database. The public SSH keys for a host may be obtained using the utility `ssh-keyscan`. For example, `ssh-keyscan github.com`. The public key for github.com is always implicitly added.\n"
+      },
+      "ssh-strict": {
+        "description": "Whether to perform strict host key checking. When true, adds the options `StrictHostKeyChecking=yes` and `CheckHostIP=no` to the SSH command line. Use the input `ssh-known-hosts` to configure additional hosts.\n",
+        "default": "true"
+      },
+      "ssh-user": {
+        "description": "The user to use when connecting to the remote SSH host. By default 'git' is used.\n",
+        "default": "git"
+      },
+      "persist-credentials": {
+        "description": "Whether to configure the token or SSH key with the local git config",
+        "default": "true"
+      },
+      "path": {
+        "description": "Relative path under $GITHUB_WORKSPACE to place the repository"
+      },
+      "clean": {
+        "description": "Whether to execute `git clean -ffdx && git reset --hard HEAD` before fetching",
+        "default": "true"
+      },
+      "filter": {
+        "description": "Partially clone against a given filter. Overrides sparse-checkout if set.\n"
+      },
+      "sparse-checkout": {
+        "description": "Do a sparse checkout on given patterns. Each pattern should be separated with new lines.\n"
+      },
+      "sparse-checkout-cone-mode": {
+        "description": "Specifies whether to use cone-mode when doing a sparse checkout.\n",
+        "default": "true"
+      },
+      "fetch-depth": {
+        "description": "Number of commits to fetch. 0 indicates all history for all branches and tags.",
+        "default": "1"
+      },
+      "fetch-tags": {
+        "description": "Whether to fetch tags, even if fetch-depth > 0.",
+        "default": "false"
+      },
+      "show-progress": {
+        "description": "Whether to show progress status output when fetching.",
+        "default": "true"
+      },
+      "lfs": {
+        "description": "Whether to download Git-LFS files",
+        "default": "false"
+      },
+      "submodules": {
+        "description": "Whether to checkout submodules: `true` to checkout submodules or `recursive` to recursively checkout submodules.\n\nWhen the `ssh-key` input is not provided, SSH URLs beginning with `git@github.com:` are converted to HTTPS.\n",
+        "default": "false"
+      },
+      "set-safe-directory": {
+        "description": "Add repository path as safe.directory for Git global config by running `git config --global --add safe.directory <path>`",
+        "default": "true"
+      },
+      "github-server-url": {
+        "description": "The base URL for the GitHub instance that you are trying to clone from, will use environment defaults to fetch from the same instance that the workflow is running from unless specified. Example URLs are https://github.com or https://my-ghes-server.example.com",
+        "required": false
+      }
+    },
+    "outputs": {
+      "ref": {
+        "description": "The branch, tag or SHA that was checked out"
+      },
+      "commit": {
+        "description": "The commit SHA that was checked out"
+      }
+    }
+  },
+  "dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9": {
+    "name": "rustup toolchain install",
+    "description": "Install the Rust toolchain",
+    "inputs": {
+      "toolchain": {
+        "description": "Rust toolchain specification -- see https://rust-lang.github.io/rustup/concepts/toolchains.html#toolchain-specification",
+        "required": true
+      },
+      "targets": {
+        "description": "Comma-separated list of target triples to install for this toolchain",
+        "required": false
+      },
+      "target": {
+        "description": "Alias for `targets`",
+        "required": false
+      },
+      "components": {
+        "description": "Comma-separated list of components to be additionally installed",
+        "required": false
+      }
+    },
+    "outputs": {
+      "cachekey": {
+        "description": "A short hash of the rustc version, appropriate for use as a cache key. \"20220627a831\""
+      },
+      "name": {
+        "description": "Rustup's name for the selected version of the toolchain. \"1.62.0\""
+      }
+    }
+  }
+}

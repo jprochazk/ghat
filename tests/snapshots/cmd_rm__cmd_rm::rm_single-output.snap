@@ -4,4 +4,4 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-removed actions/checkout
+     Removed actions/checkout

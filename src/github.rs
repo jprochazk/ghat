@@ -1,6 +1,8 @@
 use indexmap::IndexMap;
 use serde::Deserialize;
 
+use crate::lockfile::RefKind;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ActionRef {
     pub owner: String,
@@ -50,6 +52,7 @@ pub struct ResolvedAction {
     pub repo: String,
     pub version: String,
     pub sha: String,
+    pub ref_kind: RefKind,
 }
 
 // API response types
@@ -141,8 +144,21 @@ pub fn resolve_action(
             let req = parse_version_req(tag)?;
             resolve_compatible(api, &action_ref.owner, &action_ref.repo, &req)
         }
-        Some(tag) => resolve_tag(api, &action_ref.owner, &action_ref.repo, tag),
+        Some(tag) => resolve_tag_or_branch(api, &action_ref.owner, &action_ref.repo, tag),
         None => resolve_latest(api, &action_ref.owner, &action_ref.repo),
+    }
+}
+
+/// Resolve a ref that could be a tag or a branch. Tries tags first, falls back to branches.
+fn resolve_tag_or_branch(
+    api: &dyn GitHubApi,
+    owner: &str,
+    repo: &str,
+    name: &str,
+) -> miette::Result<ResolvedAction> {
+    match resolve_tag(api, owner, repo, name) {
+        Ok(resolved) => Ok(resolved),
+        Err(_) => resolve_branch(api, owner, repo, name),
     }
 }
 
@@ -159,6 +175,7 @@ pub fn resolve_latest(
         repo: repo.to_string(),
         version: release.tag_name,
         sha,
+        ref_kind: RefKind::Tag,
     })
 }
 
@@ -266,6 +283,7 @@ pub fn resolve_compatible(
                         repo: repo.to_string(),
                         version: tag.clone(),
                         sha,
+                        ref_kind: RefKind::Tag,
                     });
                 }
             }
@@ -290,6 +308,24 @@ pub fn resolve_tag(
         repo: repo.to_string(),
         version: tag.to_string(),
         sha,
+        ref_kind: RefKind::Tag,
+    })
+}
+
+pub fn resolve_branch(
+    api: &dyn GitHubApi,
+    owner: &str,
+    repo: &str,
+    branch: &str,
+) -> miette::Result<ResolvedAction> {
+    let git_ref = api.get_git_ref(owner, repo, &format!("heads/{branch}"))?;
+
+    Ok(ResolvedAction {
+        owner: owner.to_string(),
+        repo: repo.to_string(),
+        version: branch.to_string(),
+        sha: git_ref.object.sha,
+        ref_kind: RefKind::Branch,
     })
 }
 
@@ -782,6 +818,7 @@ mod tests {
             repo: "checkout",
             version: "v4.2.2",
             sha: "11bd71901bbe5b1630ceea73d27597364c9af683",
+            ref_kind: Tag,
         }
         "#);
     }
@@ -796,6 +833,7 @@ mod tests {
             repo: "checkout",
             version: "v4.2.2",
             sha: "11bd71901bbe5b1630ceea73d27597364c9af683",
+            ref_kind: Tag,
         }
         "#);
     }
@@ -812,6 +850,7 @@ mod tests {
             repo: "rust-cache",
             version: "v2.7.8",
             sha: "9d47c6ad4b02e050fd481d890b2ea34778fd09d6",
+            ref_kind: Tag,
         }
         "#);
     }
@@ -826,6 +865,7 @@ mod tests {
             repo: "rust-cache",
             version: "v2.7.8",
             sha: "9d47c6ad4b02e050fd481d890b2ea34778fd09d6",
+            ref_kind: Tag,
         }
         "#);
     }

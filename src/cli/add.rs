@@ -33,6 +33,7 @@ pub fn add_actions(
         lockfile.actions.insert(
             name.clone(),
             LockedAction {
+                ref_kind: resolved.ref_kind,
                 version: resolved.version.clone(),
                 sha: resolved.sha.clone(),
             },
@@ -89,15 +90,13 @@ pub fn run(actions: Vec<String>, _auto: bool, github_token: Option<String>) -> m
                     &resolved.version,
                 )?;
                 codegen::write_action_types(base, name, &manifest)?;
-                eprintln!(
-                    "added {} {} ({})",
-                    name,
-                    resolved.version,
-                    &resolved.sha[..12]
+                super::style::status(
+                    "Added",
+                    format!("{name} {} ({})", resolved.version, &resolved.sha[..12]),
                 );
             }
             AddResult::Skipped { name } => {
-                eprintln!("skipped {name} (already in lockfile)");
+                super::style::status("Skipped", format!("{name} (already in lockfile)"));
             }
         }
     }
@@ -168,6 +167,7 @@ mod tests {
         lockfile.actions.insert(
             "Swatinem/rust-cache".into(),
             LockedAction {
+                ref_kind: crate::lockfile::RefKind::Tag,
                 version: "v2.7.7".into(),
                 sha: "oldsha".into(),
             },
@@ -191,6 +191,7 @@ mod tests {
         lockfile.actions.insert(
             "actions/checkout".into(),
             LockedAction {
+                ref_kind: crate::lockfile::RefKind::Tag,
                 version: "v4.2.1".into(),
                 sha: "oldsha".into(),
             },

@@ -4,4 +4,4 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-actions/checkout v4.2.2 is already up to date
+   Unchanged actions/checkout v4.2.2

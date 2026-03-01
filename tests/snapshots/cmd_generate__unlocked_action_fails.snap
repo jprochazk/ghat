@@ -1,0 +1,11 @@
+---
+source: tests/cmd_generate.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+  Evaluating workflow definitions
+Error: 
+  x action `actions/checkout` is not in the lockfile
+  | 
+  | Run `ghat add actions/checkout` to add it.

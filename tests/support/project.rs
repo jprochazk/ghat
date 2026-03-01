@@ -278,8 +278,8 @@ impl CommandRunner {
         let output = cmd.output().expect("failed to run ghat");
 
         let dir_str = self.project_dir.to_str().unwrap();
-        let stdout = String::from_utf8_lossy(&output.stdout).replace(dir_str, "[ROOT]");
-        let stderr = String::from_utf8_lossy(&output.stderr).replace(dir_str, "[ROOT]");
+        let stdout = sanitize_output(&output.stdout, dir_str);
+        let stderr = sanitize_output(&output.stderr, dir_str);
 
         CommandOutput {
             exit_code: output.status.code().unwrap_or(-1),
@@ -287,4 +287,54 @@ impl CommandRunner {
             stderr,
         }
     }
+}
+
+/// Replace temp directory paths and unstable timing values in command output.
+fn sanitize_output(raw: &[u8], dir_str: &str) -> String {
+    let s = String::from_utf8_lossy(raw).replace(dir_str, "[ROOT]");
+    // Redact durations like "in 42.02ms", "in 1.23s", "in 350.00µs"
+    let mut result = String::with_capacity(s.len());
+    let mut rest = s.as_str();
+    while let Some(pos) = rest.find(" in ") {
+        let after = &rest[pos + 4..];
+        // Check if this looks like a duration: digits, optional dot+digits, then a time unit
+        if let Some(end) = parse_duration_suffix(after) {
+            result.push_str(&rest[..pos]);
+            result.push_str(" in [TIME]");
+            rest = &after[end..];
+        } else {
+            result.push_str(&rest[..pos + 4]);
+            rest = after;
+        }
+    }
+    result.push_str(rest);
+    result
+}
+
+/// If `s` starts with a duration like `42.02ms`, return the byte length consumed.
+fn parse_duration_suffix(s: &str) -> Option<usize> {
+    let bytes = s.as_bytes();
+    let mut i = 0;
+    // Consume digits
+    if i >= bytes.len() || !bytes[i].is_ascii_digit() {
+        return None;
+    }
+    while i < bytes.len() && bytes[i].is_ascii_digit() {
+        i += 1;
+    }
+    // Optional fractional part
+    if i < bytes.len() && bytes[i] == b'.' {
+        i += 1;
+        while i < bytes.len() && bytes[i].is_ascii_digit() {
+            i += 1;
+        }
+    }
+    // Time unit
+    let rest = &s[i..];
+    for unit in &["ms", "µs", "ns", "s"] {
+        if rest.starts_with(unit) {
+            return Some(i + unit.len());
+        }
+    }
+    None
 }

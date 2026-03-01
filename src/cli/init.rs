@@ -48,7 +48,7 @@ pub fn run() -> miette::Result<()> {
         log::info!("created {}", lockfile.display());
     }
 
-    eprintln!("initialized ghat project in {}", base.display());
+    super::style::status("Initialized", format!("ghat project in {}", base.display()));
     Ok(())
 }
 

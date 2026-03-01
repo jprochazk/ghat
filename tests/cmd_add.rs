@@ -1,6 +1,6 @@
 mod support;
 
-use support::mock_github::{MockGitHubServer, mock_checkout, mock_rust_cache};
+use support::mock_github::{MockGitHubServer, mock_checkout, mock_rust_cache, mock_rust_toolchain};
 use support::project::TestProject;
 
 fn project_with_empty_lockfile() -> TestProject {
@@ -103,7 +103,7 @@ fn add_exact_version() {
 fn add_duplicate_skipped() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
     let p =
-        project_with_lockfile("actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
+        project_with_lockfile("actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
     let output = server_env(&p, &["add", "actions/checkout@v4.2.2"], &server);
@@ -134,4 +134,19 @@ fn add_invalid_ref() {
     let p = project_with_empty_lockfile();
     let output = p.ghat(&["add", "invalid"]).run();
     snapshot!(output);
+}
+
+#[test]
+fn add_branch_ref() {
+    let server = MockGitHubServer::new()
+        .add(mock_rust_toolchain())
+        .start();
+    let p = project_with_empty_lockfile();
+    let before = p.snapshot_glob(".github/ghat/ghat.lock");
+
+    let output = server_env(&p, &["add", "dtolnay/rust-toolchain@stable"], &server);
+    let after = p.snapshot_glob(".github/ghat/ghat.lock");
+
+    snapshot!("output", output);
+    snapshot!("diff", before.diff(&after));
 }

@@ -4,4 +4,4 @@ expression: output
 ---
 exit_code: 0
 ---stderr---
-check passed
+    Finished check passed

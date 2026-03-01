@@ -1,0 +1,21 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+--- .github/workflows/generated_ci.yaml ---
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - id: __step_0
+      run: |
+        echo "step 1"
+        if true; then
+          echo "step 2"
+        fi

@@ -1,8 +1,9 @@
 use crate::codegen;
 use crate::github::{
-    GitHubApi, ResolvedAction, parse_version_req, resolve_compatible, resolve_latest,
+    GitHubApi, ResolvedAction, parse_version_req, resolve_branch, resolve_compatible,
+    resolve_latest, resolve_tag,
 };
-use crate::lockfile::{LockedAction, Lockfile};
+use crate::lockfile::{LockedAction, Lockfile, RefKind};
 
 #[derive(Debug)]
 pub enum UpdateResult {
@@ -20,9 +21,15 @@ pub enum UpdateResult {
 /// Derive a major-version constraint from a full version string.
 ///
 /// `v2.7.8` → `v2` (parsed as `>=2.0.0, <3.0.0`).
-/// Returns `None` if the version doesn't look like semver.
+/// Returns `None` if the version doesn't look like semver (e.g. a branch name).
 fn major_constraint(version: &str) -> Option<String> {
     let stripped = version.strip_prefix('v').unwrap_or(version);
+    // Must have at least one dot to be semver-like (e.g. "2.7.8" or "2.7").
+    // A bare major like "1" (from tag "v1") is not semver — those repos use
+    // rolling tags and have no releases to match against.
+    if !stripped.contains('.') {
+        return None;
+    }
     let major = stripped.split('.').next()?;
     if major.parse::<u64>().is_ok() {
         Some(format!("v{major}"))
@@ -45,6 +52,11 @@ fn resolve_update(
         .split_once('/')
         .ok_or_else(|| miette::miette!("invalid action name in lockfile: {name}"))?;
 
+    // Branches always re-resolve the same branch HEAD
+    if current.ref_kind == RefKind::Branch {
+        return resolve_branch(api, owner, repo, &current.version);
+    }
+
     if breaking {
         return resolve_latest(api, owner, repo);
     }
@@ -55,8 +67,8 @@ fn resolve_update(
         return resolve_compatible(api, owner, repo, &req);
     }
 
-    // Non-semver version — fall back to latest
-    resolve_latest(api, owner, repo)
+    // Non-semver tag (e.g. "v1" rolling tag) — re-resolve the same tag
+    resolve_tag(api, owner, repo, &current.version)
 }
 
 /// Core logic: update actions in lockfile.
@@ -101,6 +113,7 @@ pub fn update_actions(
             lockfile.actions.insert(
                 name.clone(),
                 LockedAction {
+                    ref_kind: resolved.ref_kind,
                     version: resolved.version.clone(),
                     sha: resolved.sha.clone(),
                 },
@@ -120,6 +133,7 @@ pub fn update_actions(
 pub fn run(
     actions: Vec<String>,
     breaking: bool,
+    dry_run: bool,
     github_token: Option<String>,
 ) -> miette::Result<()> {
     let (path, mut lockfile) = super::common::load_lockfile()?;
@@ -130,10 +144,9 @@ pub fn run(
 
     let client = super::common::github_client(github_token);
     let results = update_actions(&client, &mut lockfile, &actions, breaking)?;
-    lockfile.save(&path)?;
 
-    let base = super::common::base_dir();
-    let mut cache = codegen::ManifestCache::load(&base.join("actions/cache.json"))?;
+    let update_label = if dry_run { "Would update" } else { "Updated" };
+    let unchanged_label = if dry_run { "Up to date" } else { "Unchanged" };
 
     for r in &results {
         match r {
@@ -142,23 +155,40 @@ pub fn run(
                 old_version,
                 new,
             } => {
-                let manifest = codegen::get_or_fetch_manifest(
-                    &mut cache,
-                    &client,
-                    name,
-                    &new.sha,
-                    &new.version,
-                )?;
-                codegen::write_action_types(base, name, &manifest)?;
-                eprintln!(
-                    "updated {name} {old_version} -> {} ({})",
-                    new.version,
-                    &new.sha[..12]
+                super::style::status(
+                    update_label,
+                    format!(
+                        "{name} {old_version} -> {} ({})",
+                        new.version,
+                        &new.sha[..12]
+                    ),
                 );
             }
             UpdateResult::Unchanged { name, version } => {
-                eprintln!("{name} {version} is already up to date");
+                super::style::status(unchanged_label, format!("{name} {version}"));
             }
+        }
+    }
+
+    if dry_run {
+        return Ok(());
+    }
+
+    lockfile.save(&path)?;
+
+    let base = super::common::base_dir();
+    let mut cache = codegen::ManifestCache::load(&base.join("actions/cache.json"))?;
+
+    for r in &results {
+        if let UpdateResult::Updated { name, new, .. } = r {
+            let manifest = codegen::get_or_fetch_manifest(
+                &mut cache,
+                &client,
+                name,
+                &new.sha,
+                &new.version,
+            )?;
+            codegen::write_action_types(base, name, &manifest)?;
         }
     }
 
@@ -177,6 +207,7 @@ mod tests {
         lockfile.actions.insert(
             "actions/checkout".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v4.1.0".into(),
                 sha: "8ade135a41bc03ea155e62e844d188df1ea18608".into(),
             },
@@ -220,6 +251,7 @@ mod tests {
         lockfile.actions.insert(
             "actions/checkout".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v4.2.2".into(),
                 sha: "11bd71901bbe5b1630ceea73d27597364c9af683".into(),
             },
@@ -239,6 +271,7 @@ mod tests {
         lockfile.actions.insert(
             "Swatinem/rust-cache".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v2.7.0".into(),
                 sha: "bd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
             },
@@ -258,6 +291,7 @@ mod tests {
         lockfile.actions.insert(
             "Swatinem/rust-cache".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v1.4.0".into(),
                 sha: "cd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
             },
@@ -278,6 +312,7 @@ mod tests {
         lockfile.actions.insert(
             "Swatinem/rust-cache".into(),
             LockedAction {
+                ref_kind: RefKind::Tag,
                 version: "v1.4.0".into(),
                 sha: "cd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
             },

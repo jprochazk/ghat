@@ -5,28 +5,28 @@ edition = "2024"
 
 [dependencies]
 clap = { version = "4.5.58", features = ["derive", "env"] }
+dialoguer = "0.12.0"
 env_logger = "0.11.9"
 indexmap = { version = "2.13.0", features = ["serde"] }
 log = "0.4.29"
-oxc-miette = { version = "2.7.0", features = ["fancy"] }
 oxc_allocator = { version = "0.114.0", default-features = false }
 oxc_ast = { version = "0.114.0", default-features = false }
 oxc_codegen = { version = "0.114.0", default-features = false, features = ["sourcemap"] }
 oxc_diagnostics = { version = "0.114.0", default-features = false }
+oxc-miette = { version = "2.7.0", features = ["fancy"] }
 oxc_parser = { version = "0.114.0", default-features = false }
 oxc_semantic = { version = "0.114.0", default-features = false }
 oxc_sourcemap = "6.0.2"
 oxc_span = { version = "0.114.0", default-features = false }
 oxc_transformer = { version = "0.114.0", default-features = false }
-rquickjs = { version = "0.11.0", features = ["bindgen", "loader"] }
 rquickjs-serde = "0.5.0"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_json = "1.0.149"
+rquickjs = { version = "0.11.0", features = ["bindgen", "loader"] }
 semver = "1"
+serde_json = "1.0.149"
+serde = { version = "1.0.228", features = ["derive"] }
 serde_yaml_ng = "0.10.0"
+tsgo = "0.1"
 ureq = { version = "3.2.0", features = ["json"] }
-
-tsgo = { git = "https://github.com/jprochazk/tsgo-rs.git", branch = "main" }
 
 [dev-dependencies]
 glob = "0.3.3"

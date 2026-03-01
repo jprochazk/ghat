@@ -2,5 +2,5 @@
 source: src/lockfile.rs
 expression: serialized
 ---
-Swatinem/rust-cache v2.7.8 779680da715d629ac1d338a641029a2f4372abb5
-taiki-e/install-action v2.44.3 288875dd3d64326724fa6d9593062d9f8ba0b131
+Swatinem/rust-cache tag:v2.7.8 779680da715d629ac1d338a641029a2f4372abb5
+taiki-e/install-action tag:v2.44.3 288875dd3d64326724fa6d9593062d9f8ba0b131

@@ -4,4 +4,4 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-skipped actions/checkout (already in lockfile)
+     Skipped actions/checkout (already in lockfile)

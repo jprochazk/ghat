@@ -4,6 +4,7 @@ expression: output
 ---
 exit_code: 1
 ---stderr---
+    Checking workflow definitions
 Error: 
   x type-check failed with 5 error(s)
 

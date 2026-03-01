@@ -3,7 +3,9 @@ pub mod check;
 pub mod common;
 pub mod generate;
 pub mod init;
+pub mod new;
 pub mod rm;
+pub mod style;
 pub mod update;
 
 use clap::{Parser, Subcommand};
@@ -56,6 +58,16 @@ enum Command {
         /// Allow breaking (major) version updates
         #[arg(long)]
         breaking: bool,
+
+        /// Show what would be updated without making changes
+        #[arg(long)]
+        dry_run: bool,
+    },
+
+    /// Create a new workflow definition file
+    New {
+        /// Workflow name (defaults to "ci")
+        name: Option<String>,
     },
 
     /// Generate workflow files from definitions
@@ -87,7 +99,12 @@ pub fn entrypoint() -> miette::Result<()> {
         Command::Init => init::run(),
         Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
         Command::Rm { actions } => rm::run(actions),
-        Command::Update { actions, breaking } => update::run(actions, breaking, cli.github_token),
+        Command::Update {
+            actions,
+            breaking,
+            dry_run,
+        } => update::run(actions, breaking, dry_run, cli.github_token),
+        Command::New { name } => new::run(name),
         Command::Generate { no_check } => generate::run(no_check),
         Command::Check => check::run(),
     }

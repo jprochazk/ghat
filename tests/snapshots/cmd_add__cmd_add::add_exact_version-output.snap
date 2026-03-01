@@ -4,4 +4,4 @@ expression: value
 ---
 exit_code: 0
 ---stderr---
-added actions/checkout v4.2.1 (b4ffde65f463)
+       Added actions/checkout v4.2.1 (b4ffde65f463)

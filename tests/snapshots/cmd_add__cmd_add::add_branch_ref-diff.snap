@@ -1,0 +1,8 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+--- a/.github/ghat/ghat.lock
++++ b/.github/ghat/ghat.lock
+@@ -0,0 +1 @@
++dtolnay/rust-toolchain branch:stable a3b77706cfa4c4bf431a39f7e267c878effdf858

@@ -1,0 +1,9 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+  Evaluating workflow definitions
+       Wrote .github/workflows/generated_ci.yaml
+    Finished generated 1 workflow in [TIME]

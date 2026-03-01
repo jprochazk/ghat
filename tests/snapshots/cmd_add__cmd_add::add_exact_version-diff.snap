@@ -5,4 +5,4 @@ expression: value
 --- a/.github/ghat/ghat.lock
 +++ b/.github/ghat/ghat.lock
 @@ -0,0 +1 @@
-+actions/checkout v4.2.1 b4ffde65f46336ab88eb53be808477a3936bae11
++actions/checkout tag:v4.2.1 b4ffde65f46336ab88eb53be808477a3936bae11

@@ -5,10 +5,12 @@ expression: lockfile
 Lockfile {
     actions: {
         "Swatinem/rust-cache": LockedAction {
+            ref_kind: Tag,
             version: "v2.7.8",
             sha: "779680da715d629ac1d338a641029a2f4372abb5",
         },
         "taiki-e/install-action": LockedAction {
+            ref_kind: Tag,
             version: "v2.44.3",
             sha: "288875dd3d64326724fa6d9593062d9f8ba0b131",
         },
