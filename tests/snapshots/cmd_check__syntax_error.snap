@@ -1,5 +1,5 @@
 ---
-source: tests/cmd_generate.rs
+source: tests/cmd_check.rs
 expression: output
 ---
 exit_code: 1

@@ -101,6 +101,8 @@ pub fn action_dts_filename(action_name: &str) -> String {
 pub fn generate_action_dts(action_name: &str, manifest: &ActionManifest) -> String {
     let mut out = String::new();
 
+    out.push_str("declare global {\n");
+
     // Build input type
     let mut action_has_required_inputs = false;
     let mut input_fields = Vec::new();
@@ -161,10 +163,15 @@ pub fn generate_action_dts(action_name: &str, manifest: &ActionManifest) -> Stri
         doc_lines.push(escape_jsdoc(desc));
     }
     doc_lines.push(format!("@see https://github.com/{action_name}"));
-    if let Some(comment) = jsdoc("", &doc_lines) {
+    if let Some(comment) = jsdoc("  ", &doc_lines) {
         out.push_str(&comment);
         out.push('\n');
     }
+
+    // Function overload
+    out.push_str(&format!(
+        "  function uses(\n    action: \"{action_name}\",\n"
+    ));
 
     // Options type name
     let options_type = if action_has_required_inputs {
@@ -172,12 +179,6 @@ pub fn generate_action_dts(action_name: &str, manifest: &ActionManifest) -> Stri
     } else {
         "UsesOptions"
     };
-
-    // Function overload
-    out.push_str("declare global {\n");
-    out.push_str(&format!(
-        "  function uses(\n    action: \"{action_name}\",\n"
-    ));
 
     // Options parameter
     if input_fields.is_empty() {

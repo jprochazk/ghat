@@ -2,11 +2,11 @@
 source: tests/cmd_update.rs
 expression: value
 ---
-/**
- * Check out a Git repository at a particular version.
- * @see https://github.com/actions/checkout
- */
 declare global {
+  /**
+   * Check out a Git repository at a particular version.
+   * @see https://github.com/actions/checkout
+   */
   function uses(
     action: "actions/checkout",
     options?: UsesOptions<{

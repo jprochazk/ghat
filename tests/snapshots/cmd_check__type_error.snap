@@ -1,0 +1,16 @@
+---
+source: tests/cmd_check.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+Error: 
+  x type-check failed with 1 error(s)
+
+Error: TS2322
+
+  x TS2322: Type 'number' is not assignable to type 'string'.
+   ,-[[ROOT]/.github/ghat/workflows/bad.ts:1:7]
+ 1 | const x: string = 42;
+   :       ^
+   `----

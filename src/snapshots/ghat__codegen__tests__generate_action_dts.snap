@@ -2,11 +2,11 @@
 source: src/codegen.rs
 expression: dts
 ---
-/**
- * A test action for unit tests.
- * @see https://github.com/test/action
- */
 declare global {
+  /**
+   * A test action for unit tests.
+   * @see https://github.com/test/action
+   */
   function uses(
     action: "test/action",
     options: UsesOptionsRequired<{

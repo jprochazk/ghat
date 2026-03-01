@@ -26,6 +26,8 @@ semver = "1"
 serde_yaml_ng = "0.10.0"
 ureq = { version = "3.2.0", features = ["json"] }
 
+tsgo = { git = "https://github.com/jprochazk/tsgo-rs.git", branch = "main" }
+
 [dev-dependencies]
 glob = "0.3.3"
 insta = { version = "1.46.3", features = ["yaml"] }

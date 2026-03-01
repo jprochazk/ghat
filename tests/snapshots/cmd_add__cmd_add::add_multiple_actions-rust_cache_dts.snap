@@ -2,11 +2,11 @@
 source: tests/cmd_add.rs
 expression: value
 ---
-/**
- * A GitHub Action that implements smart caching for Rust projects.
- * @see https://github.com/Swatinem/rust-cache
- */
 declare global {
+  /**
+   * A GitHub Action that implements smart caching for Rust projects.
+   * @see https://github.com/Swatinem/rust-cache
+   */
   function uses(
     action: "Swatinem/rust-cache",
     options?: UsesOptions<{

@@ -11,8 +11,8 @@ const TSCONFIG: &str = r#"{
     "target": "ESNext",
     "module": "ESNext",
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
-    "isolatedDeclarations": true,
     "noEmit": true,
     "skipLibCheck": true
   },

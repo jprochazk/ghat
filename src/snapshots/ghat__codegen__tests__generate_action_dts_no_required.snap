@@ -2,11 +2,11 @@
 source: src/codegen.rs
 expression: dts
 ---
-/**
- * A simple action.
- * @see https://github.com/org/simple
- */
 declare global {
+  /**
+   * A simple action.
+   * @see https://github.com/org/simple
+   */
   function uses(
     action: "org/simple",
     options?: UsesOptions<{

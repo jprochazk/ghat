@@ -1,4 +1,5 @@
 pub mod add;
+pub mod check;
 pub mod common;
 pub mod generate;
 pub mod init;
@@ -58,7 +59,11 @@ enum Command {
     },
 
     /// Generate workflow files from definitions
-    Generate,
+    Generate {
+        /// Skip type-checking before generation
+        #[arg(long)]
+        no_check: bool,
+    },
 
     /// Check workflow definitions without writing files
     Check,
@@ -83,7 +88,7 @@ pub fn entrypoint() -> miette::Result<()> {
         Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
         Command::Rm { actions } => rm::run(actions),
         Command::Update { actions, breaking } => update::run(actions, breaking, cli.github_token),
-        Command::Generate => generate::run(),
-        Command::Check => todo!("check"),
+        Command::Generate { no_check } => generate::run(no_check),
+        Command::Check => check::run(),
     }
 }

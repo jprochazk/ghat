@@ -592,6 +592,7 @@ dependencies = [
  "serde_yaml_ng",
  "similar",
  "tempfile",
+ "tsgo",
  "ureq",
 ]
 
@@ -2002,6 +2003,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0742ff5ff03ea7e67c8ae6c93cac239e0d9784833362da3f9a9c1da8dfefcbdc"
 dependencies = [
  "winnow",
+]
+
+[[package]]
+name = "tsgo"
+version = "0.1.0"
+source = "git+https://github.com/jprochazk/tsgo-rs.git?branch=main#b42834a2ff5dd4830d1090e9bbc9840862d83d44"
+dependencies = [
+ "serde",
+ "serde_json",
+ "thiserror",
 ]
 
 [[package]]
