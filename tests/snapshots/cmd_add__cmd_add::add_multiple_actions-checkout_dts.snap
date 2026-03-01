@@ -1,0 +1,31 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+/**
+ * Check out a Git repository at a particular version.
+ * @see https://github.com/actions/checkout
+ */
+declare global {
+  function uses(
+    action: "actions/checkout",
+    options?: UsesOptions<{
+    /** Repository name with owner. */
+    repository?: string;
+    /** The branch, tag or SHA to checkout. */
+    ref?: string;
+    /** Personal access token used to fetch the repository. */
+    token?: string;
+    /** Number of commits to fetch. 0 indicates all history. */
+    fetch_depth?: string;
+    /** Whether to checkout submodules. */
+    submodules?: string;
+    }>,
+  ): StepRef<{
+    /** The branch, tag or SHA that was checked out. */
+    ref: string;
+    /** The commit SHA that was checked out. */
+    commit: string;
+  }>;
+}
+export {};

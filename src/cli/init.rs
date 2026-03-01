@@ -16,12 +16,12 @@ const TSCONFIG: &str = r#"{
     "noEmit": true,
     "skipLibCheck": true
   },
-  "include": ["workflows/**/*.ts", "types/**/*.d.ts"]
+  "include": ["workflows/**/*.ts", "types/**/*.d.ts", "actions/**/*.d.ts"]
 }
 "#;
 
 pub fn run() -> miette::Result<()> {
-    let base = Path::new(".github/ghat");
+    let base = Path::new(super::common::BASE_DIR);
 
     if base.exists() {
         log::info!("{} already exists", base.display());
@@ -30,6 +30,7 @@ pub fn run() -> miette::Result<()> {
     let dirs = [
         base.join("types"),
         base.join("workflows"),
+        base.join("actions"),
     ];
     for dir in &dirs {
         std::fs::create_dir_all(dir)

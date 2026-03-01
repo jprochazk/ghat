@@ -1,0 +1,20 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+globalThis.__GHAT_ACTION_MAPPINGS = {
+  "Swatinem/rust-cache": {
+    inputs: {
+      "shared_key": "shared-key",
+      "cache_on_failure": "cache-on-failure"
+    },
+    outputs: {
+      "cache_hit": "cache-hit"
+    },
+  },
+  "actions/checkout": {
+    inputs: {
+      "fetch_depth": "fetch-depth"
+    },
+  },
+};

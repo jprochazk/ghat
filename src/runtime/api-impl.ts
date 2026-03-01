@@ -3,6 +3,7 @@ import type * as Builtins from "./api";
 
 declare function __define_workflow(name: string, workflow: Output.Workflow): void;
 declare function __normalize_id(name: string): string;
+declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, string>; outputs?: Record<string, string> }> | undefined;
 
 (function() {
   const define_workflow = __define_workflow;
@@ -172,9 +173,22 @@ declare function __normalize_id(name: string): string;
     return `__step_${step_counter++}`;
   }
 
-  function register_step_outputs(step_id: string): any {
-    // Build an outputs proxy for this step — any property access generates an expression
-    const outputs_proxy = context_proxy(`steps.${step_id}.outputs`);
+  function register_step_outputs(step_id: string, action?: string): any {
+    const output_mapping = action ? globalThis.__GHAT_ACTION_MAPPINGS?.[action]?.outputs : undefined;
+
+    // Build a proxy that maps snake_case access to original-case expressions
+    const outputs_proxy = new Proxy({}, {
+      get(_target: any, prop: string | symbol): any {
+        if (prop === Symbol.toPrimitive) {
+          return () => `\${{ steps.${step_id}.outputs }}`;
+        }
+        if (typeof prop === "symbol") return undefined;
+        // Map snake_case prop to original name for the expression
+        const original = output_mapping?.[prop] ?? prop;
+        return context_proxy(`steps.${step_id}.outputs.${original}`);
+      },
+    });
+
     // Register into the steps context so subsequent steps can access it via ctx.steps.<id>
     if (steps_entries != null) {
       steps_entries[step_id] = { outputs: outputs_proxy };
@@ -196,17 +210,15 @@ declare function __normalize_id(name: string): string;
     const step_id = next_step_id();
     const step: Output.Step & Record<string, any> = { id: step_id, uses: action, ...map_step_options(options) };
     if (options?.with != null) {
-      // Map snake_case input keys to kebab-case for the output
+      const mapping = globalThis.__GHAT_ACTION_MAPPINGS?.[action]?.inputs;
       const with_out: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(options.with)) {
-        with_out[key] = value;
+        with_out[mapping?.[key] ?? key] = value;
       }
       step.with = with_out;
     }
     current_steps.push(step);
-    // uses() outputs are defined by the action type declarations, but at runtime
-    // we can't know them statically — return a proxy that generates expressions for any key
-    return register_step_outputs(step_id);
+    return register_step_outputs(step_id, action);
   }
 
   // == Jobs =========================================================

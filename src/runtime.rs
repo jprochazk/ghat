@@ -85,17 +85,22 @@ impl<T> CaughtResultExt<T> for Result<T, js::CaughtError<'_>> {
     }
 }
 
-pub struct Runtime {
-    // Drop order matters: ctx must be dropped before _rt so all JS objects
-    // are freed before the QuickJS runtime is torn down.
-    ctx: js::Context,
-    _rt: js::Runtime,
-
-    generated_workflows: Rc<RefCell<IndexMap<String, Workflow>>>,
+pub struct RuntimeBuilder {
+    mappings_js: Option<String>,
 }
 
-impl Runtime {
-    pub fn init() -> miette::Result<Self> {
+impl RuntimeBuilder {
+    /// Set the action mappings JS source (contents of `mappings.js`).
+    ///
+    /// This is evaluated before `api-impl.ts` so that `__GHAT_ACTION_MAPPINGS`
+    /// is available to the builtins.
+    pub fn mappings(mut self, js: &str) -> Self {
+        self.mappings_js = Some(js.to_owned());
+        self
+    }
+
+    /// Build the runtime, evaluating all setup scripts.
+    pub fn build(self) -> miette::Result<Runtime> {
         let rt = {
             let rt = js::Runtime::new().into_diagnostic()?;
             let ctx = js::Context::custom::<(
@@ -106,7 +111,7 @@ impl Runtime {
             )>(&rt)
             .into_diagnostic()?;
             rt.set_loader(TsResolver, TsLoader);
-            Self {
+            Runtime {
                 ctx,
                 _rt: rt,
                 generated_workflows: Default::default(),
@@ -114,6 +119,14 @@ impl Runtime {
         };
 
         register_builtins(&rt);
+
+        if let Some(mappings) = &self.mappings_js {
+            rt.eval_script(mappings)
+                .wrap_err("failed to evaluate mappings.js")?;
+        }
+
+        rt.eval_script(&api_impl_js())
+            .wrap_err("failed to evaluate api-impl.ts")?;
 
         rt.ctx.with(|ctx| {
             ctx.globals()
@@ -123,8 +136,33 @@ impl Runtime {
 
         Ok(rt)
     }
+}
 
-    pub fn eval_module(&self, path: &Path) -> miette::Result<()> {
+pub struct Runtime {
+    // Drop order matters: ctx must be dropped before _rt so all JS objects
+    // are freed before the QuickJS runtime is torn down.
+    ctx: js::Context,
+    _rt: js::Runtime,
+
+    generated_workflows: Rc<RefCell<IndexMap<String, Workflow>>>,
+}
+
+impl Runtime {
+    pub fn builder() -> RuntimeBuilder {
+        RuntimeBuilder {
+            mappings_js: None,
+        }
+    }
+
+    fn eval_script(&self, source: &str) -> miette::Result<()> {
+        self.ctx.with(|ctx| {
+            ctx.eval::<(), _>(source)
+                .catch(&ctx)
+                .into_miette()
+        })
+    }
+
+    pub fn eval_workflow_definition(&self, path: &Path) -> miette::Result<()> {
         let name = path.to_string_lossy().to_string();
         let source = std::fs::read_to_string(path)
             .into_diagnostic()
@@ -143,6 +181,18 @@ impl Runtime {
     pub fn finish(self) -> Vec<(String, Workflow)> {
         self.generated_workflows.take().into_iter().collect()
     }
+}
+
+/// Embedded `api-impl.ts` source, stripped of type annotations.
+fn api_impl_js() -> String {
+    use crate::oxc;
+
+    const SRC: &str = include_str!("./runtime/api-impl.ts");
+
+    let alloc = oxc::allocator();
+    let program = oxc::parse_ts(&alloc, SRC).expect("BUG: failed to parse runtime/api-impl.ts");
+    let stripped = oxc::strip_type_annotations(&alloc, program, "api-impl.ts");
+    stripped.code
 }
 
 fn register_builtins(runtime: &Runtime) {
@@ -199,36 +249,6 @@ fn register_builtins(runtime: &Runtime) {
             .set("__normalize_id", js::function::Func::from(normalize_id))
             .catch(&ctx)
             .expect("BUG: failed to set global __normalize_id");
-    });
-
-    define_js_builtins(runtime);
-
-    runtime.ctx.with(move |ctx| {
-        let globals = ctx.globals();
-        globals
-            .remove("__define_workflow")
-            .catch(&ctx)
-            .expect("BUG: failed to remove global __define_workflow");
-        globals
-            .remove("__normalize_id")
-            .catch(&ctx)
-            .expect("BUG: failed to remove global __normalize_id");
-    })
-}
-
-fn define_js_builtins(runtime: &Runtime) {
-    use crate::oxc;
-
-    const SRC: &str = include_str!("./runtime/api-impl.ts");
-
-    let alloc = oxc::allocator();
-    let program = oxc::parse_ts(&alloc, SRC).expect("BUG: failed to parse runtime/api-impl.ts");
-    let stripped = oxc::strip_type_annotations(&alloc, program, "api-impl.ts");
-
-    runtime.ctx.with(move |ctx| {
-        ctx.eval::<(), _>(stripped.code)
-            .catch(&ctx)
-            .expect("BUG: failed to evaluate builtins");
     });
 }
 

@@ -1,4 +1,5 @@
-use crate::github::{parse_action_ref, resolve_action, ActionRef, GitHubApi, ResolvedAction};
+use crate::codegen;
+use crate::github::{ActionRef, GitHubApi, ResolvedAction, parse_action_ref, resolve_action};
 use crate::lockfile::{LockedAction, Lockfile};
 
 pub enum AddResult {
@@ -57,7 +58,10 @@ pub fn run(actions: Vec<String>, _auto: bool, github_token: Option<String>) -> m
     let refs: Vec<ActionRef> = refs.into_iter().map(Result::unwrap).collect();
 
     if !errors.is_empty() {
-        let msgs: Vec<String> = errors.into_iter().map(|e| e.unwrap_err().to_string()).collect();
+        let msgs: Vec<String> = errors
+            .into_iter()
+            .map(|e| e.unwrap_err().to_string())
+            .collect();
         return Err(miette::miette!("{}", msgs.join("\n")));
     }
 
@@ -71,16 +75,34 @@ pub fn run(actions: Vec<String>, _auto: bool, github_token: Option<String>) -> m
     let results = add_actions(&client, &mut lockfile, &refs)?;
     lockfile.save(&path)?;
 
+    let base = super::common::base_dir();
+    let mut cache = codegen::ManifestCache::load(&base.join("actions/cache.json"))?;
+
     for r in &results {
         match r {
             AddResult::Added { name, resolved } => {
-                eprintln!("added {} {} ({})", name, resolved.version, &resolved.sha[..12]);
+                let manifest = codegen::get_or_fetch_manifest(
+                    &mut cache,
+                    &client,
+                    name,
+                    &resolved.sha,
+                    &resolved.version,
+                )?;
+                codegen::write_action_types(base, name, &manifest)?;
+                eprintln!(
+                    "added {} {} ({})",
+                    name,
+                    resolved.version,
+                    &resolved.sha[..12]
+                );
             }
             AddResult::Skipped { name } => {
                 eprintln!("skipped {name} (already in lockfile)");
             }
         }
     }
+
+    super::common::finalize_codegen(&lockfile, &mut cache)?;
 
     Ok(())
 }
@@ -155,7 +177,9 @@ mod tests {
         let results = add_actions(&mock, &mut lockfile, &refs).unwrap();
 
         assert_eq!(results.len(), 1);
-        assert!(matches!(&results[0], AddResult::Skipped { name } if name == "Swatinem/rust-cache"));
+        assert!(
+            matches!(&results[0], AddResult::Skipped { name } if name == "Swatinem/rust-cache")
+        );
         // Lockfile unchanged
         assert_eq!(lockfile.actions["Swatinem/rust-cache"].version, "v2.7.7");
     }

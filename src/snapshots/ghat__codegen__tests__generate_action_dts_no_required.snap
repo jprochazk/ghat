@@ -1,0 +1,18 @@
+---
+source: src/codegen.rs
+expression: dts
+---
+/**
+ * A simple action.
+ * @see https://github.com/org/simple
+ */
+declare global {
+  function uses(
+    action: "org/simple",
+    options?: UsesOptions<{
+    /** An optional input. */
+    my_input?: string;
+    }>,
+  ): StepRef;
+}
+export {};

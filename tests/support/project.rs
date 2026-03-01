@@ -47,10 +47,16 @@ impl fmt::Display for ProjectSnapshot {
 impl ProjectSnapshot {
     /// Compute a unified diff between this snapshot and another.
     pub fn diff(&self, other: &ProjectSnapshot) -> String {
-        let before: BTreeMap<&str, &str> =
-            self.files.iter().map(|(p, c)| (p.as_str(), c.as_str())).collect();
-        let after: BTreeMap<&str, &str> =
-            other.files.iter().map(|(p, c)| (p.as_str(), c.as_str())).collect();
+        let before: BTreeMap<&str, &str> = self
+            .files
+            .iter()
+            .map(|(p, c)| (p.as_str(), c.as_str()))
+            .collect();
+        let after: BTreeMap<&str, &str> = other
+            .files
+            .iter()
+            .map(|(p, c)| (p.as_str(), c.as_str()))
+            .collect();
 
         let mut all_paths: BTreeMap<&str, ()> = BTreeMap::new();
         for key in before.keys().chain(after.keys()) {
@@ -276,10 +282,8 @@ impl CommandRunner {
         let output = cmd.output().expect("failed to run ghat");
 
         let dir_str = self.project_dir.to_str().unwrap();
-        let stdout = String::from_utf8_lossy(&output.stdout)
-            .replace(dir_str, "[ROOT]");
-        let stderr = String::from_utf8_lossy(&output.stderr)
-            .replace(dir_str, "[ROOT]");
+        let stdout = String::from_utf8_lossy(&output.stdout).replace(dir_str, "[ROOT]");
+        let stderr = String::from_utf8_lossy(&output.stderr).replace(dir_str, "[ROOT]");
 
         CommandOutput {
             exit_code: output.status.code().unwrap_or(-1),

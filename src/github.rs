@@ -78,7 +78,7 @@ pub struct GitTag {
 
 // action.yml types
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, serde::Serialize)]
 pub struct ActionManifest {
     pub name: String,
     #[serde(default)]
@@ -89,21 +89,25 @@ pub struct ActionManifest {
     pub outputs: IndexMap<String, ActionOutput>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, serde::Serialize)]
 pub struct ActionInput {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub required: Option<bool>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub default: Option<String>,
-    #[serde(default, rename = "deprecationMessage")]
+    #[serde(
+        default,
+        rename = "deprecationMessage",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub deprecation_message: Option<String>,
 }
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, serde::Serialize)]
 pub struct ActionOutput {
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
 
@@ -184,25 +188,53 @@ pub fn parse_version_req(tag: &str) -> miette::Result<semver::VersionReq> {
         [maj] => {
             let major = parse(maj)?;
             vec![
-                Comparator { op: Op::GreaterEq, major, minor: Some(0), patch: Some(0), pre: semver::Prerelease::EMPTY },
-                Comparator { op: Op::Less, major: major + 1, minor: Some(0), patch: Some(0), pre: semver::Prerelease::EMPTY },
+                Comparator {
+                    op: Op::GreaterEq,
+                    major,
+                    minor: Some(0),
+                    patch: Some(0),
+                    pre: semver::Prerelease::EMPTY,
+                },
+                Comparator {
+                    op: Op::Less,
+                    major: major + 1,
+                    minor: Some(0),
+                    patch: Some(0),
+                    pre: semver::Prerelease::EMPTY,
+                },
             ]
         }
         [maj, min] => {
             let major = parse(maj)?;
             let minor = parse(min)?;
             vec![
-                Comparator { op: Op::GreaterEq, major, minor: Some(minor), patch: Some(0), pre: semver::Prerelease::EMPTY },
-                Comparator { op: Op::Less, major, minor: Some(minor + 1), patch: Some(0), pre: semver::Prerelease::EMPTY },
+                Comparator {
+                    op: Op::GreaterEq,
+                    major,
+                    minor: Some(minor),
+                    patch: Some(0),
+                    pre: semver::Prerelease::EMPTY,
+                },
+                Comparator {
+                    op: Op::Less,
+                    major,
+                    minor: Some(minor + 1),
+                    patch: Some(0),
+                    pre: semver::Prerelease::EMPTY,
+                },
             ]
         }
         [maj, min, pat] => {
             let major = parse(maj)?;
             let minor = parse(min)?;
             let patch = parse(pat)?;
-            vec![
-                Comparator { op: Op::Exact, major, minor: Some(minor), patch: Some(patch), pre: semver::Prerelease::EMPTY },
-            ]
+            vec![Comparator {
+                op: Op::Exact,
+                major,
+                minor: Some(minor),
+                patch: Some(patch),
+                pre: semver::Prerelease::EMPTY,
+            }]
         }
         _ => return Err(miette::miette!("invalid version constraint: {tag}")),
     };
@@ -368,7 +400,11 @@ impl Iterator for ReleasePaginator<'_> {
             .call()
         {
             Ok(r) => r,
-            Err(e) => return Some(Err(miette::miette!("GitHub API request failed for {url}: {e}"))),
+            Err(e) => {
+                return Some(Err(miette::miette!(
+                    "GitHub API request failed for {url}: {e}"
+                )));
+            }
         };
 
         // Parse Link header for next page
@@ -383,7 +419,7 @@ impl Iterator for ReleasePaginator<'_> {
             Err(e) => {
                 return Some(Err(miette::miette!(
                     "failed to parse GitHub API response for {url}: {e}"
-                )))
+                )));
             }
         };
 
@@ -419,7 +455,10 @@ impl GitHubApi for GitHubClient {
         owner: &str,
         repo: &str,
     ) -> miette::Result<Box<dyn Iterator<Item = miette::Result<Vec<Release>>> + '_>> {
-        let url = format!("{}/repos/{owner}/{repo}/releases?per_page=100", self.api_base);
+        let url = format!(
+            "{}/repos/{owner}/{repo}/releases?per_page=100",
+            self.api_base
+        );
         Ok(Box::new(ReleasePaginator {
             client: self,
             next_url: Some(url),
@@ -480,10 +519,7 @@ pub mod testing {
         pub fn merge(&mut self, other: MockGitHubApi) {
             self.latest_release.extend(other.latest_release);
             for (key, releases) in other.all_releases {
-                self.all_releases
-                    .entry(key)
-                    .or_default()
-                    .extend(releases);
+                self.all_releases.entry(key).or_default().extend(releases);
             }
             self.refs.extend(other.refs);
             self.tags.extend(other.tags);
@@ -1053,10 +1089,8 @@ runs:
     fn resolve_action_branch_ref_not_semver() {
         // Non-semver tags should still go through resolve_tag directly
         let mut mock = MockGitHubApi::new();
-        mock.refs.insert(
-            "owner/repo/tags/main".into(),
-            commit_ref("abc123"),
-        );
+        mock.refs
+            .insert("owner/repo/tags/main".into(), commit_ref("abc123"));
         let action_ref = parse_action_ref("owner/repo@main").unwrap();
         let result = resolve_action(&mock, &action_ref).unwrap();
         assert_eq!(result.version, "main");

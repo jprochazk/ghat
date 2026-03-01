@@ -126,18 +126,14 @@ fn build_routes(actions: &[MockAction]) -> HashMap<String, (u16, String)> {
         // GET /repos/{owner}/{repo}/git/ref/tags/{tag}
         for (tag, (object_type, sha)) in &action.refs {
             let path = format!("/repos/{owner}/{repo}/git/ref/tags/{tag}");
-            let body = format!(
-                r#"{{"object":{{"sha":"{sha}","type":"{object_type}"}}}}"#
-            );
+            let body = format!(r#"{{"object":{{"sha":"{sha}","type":"{object_type}"}}}}"#);
             routes.insert(path, (200, body));
         }
 
         // GET /repos/{owner}/{repo}/git/tags/{sha}
         for (tag_sha, commit_sha) in &action.tags {
             let path = format!("/repos/{owner}/{repo}/git/tags/{tag_sha}");
-            let body = format!(
-                r#"{{"object":{{"sha":"{commit_sha}","type":"commit"}}}}"#
-            );
+            let body = format!(r#"{{"object":{{"sha":"{commit_sha}","type":"commit"}}}}"#);
             routes.insert(path, (200, body));
         }
 
@@ -151,10 +147,7 @@ fn build_routes(actions: &[MockAction]) -> HashMap<String, (u16, String)> {
     routes
 }
 
-fn handle_connection(
-    mut stream: std::net::TcpStream,
-    routes: &HashMap<String, (u16, String)>,
-) {
+fn handle_connection(mut stream: std::net::TcpStream, routes: &HashMap<String, (u16, String)>) {
     let mut reader = BufReader::new(stream.try_clone().unwrap());
     let mut request_line = String::new();
     if reader.read_line(&mut request_line).is_err() {
@@ -203,20 +196,65 @@ pub fn mock_checkout() -> MockAction {
     let mut refs = HashMap::new();
     refs.insert(
         "v4.2.2".into(),
-        ("commit".into(), "11bd71901bbe5b1630ceea73d27597364c9af683".into()),
+        (
+            "commit".into(),
+            "11bd71901bbe5b1630ceea73d27597364c9af683".into(),
+        ),
     );
     refs.insert(
         "v4.2.1".into(),
-        ("commit".into(), "b4ffde65f46336ab88eb53be808477a3936bae11".into()),
+        (
+            "commit".into(),
+            "b4ffde65f46336ab88eb53be808477a3936bae11".into(),
+        ),
     );
     refs.insert(
         "v4.1.0".into(),
-        ("commit".into(), "8ade135a41bc03ea155e62e844d188df1ea18608".into()),
+        (
+            "commit".into(),
+            "8ade135a41bc03ea155e62e844d188df1ea18608".into(),
+        ),
     );
     refs.insert(
         "v3.6.0".into(),
-        ("commit".into(), "f43a0e5ff2bd294095638e18286ca9a3d1956744".into()),
+        (
+            "commit".into(),
+            "f43a0e5ff2bd294095638e18286ca9a3d1956744".into(),
+        ),
     );
+
+    let mut manifests = HashMap::new();
+    let checkout_manifest = r#"
+name: Checkout
+description: Check out a Git repository at a particular version.
+inputs:
+  repository:
+    description: Repository name with owner.
+    required: false
+  ref:
+    description: The branch, tag or SHA to checkout.
+    required: false
+  token:
+    description: Personal access token used to fetch the repository.
+    required: false
+    default: ${{ github.token }}
+  fetch-depth:
+    description: Number of commits to fetch. 0 indicates all history.
+    required: false
+    default: "1"
+  submodules:
+    description: Whether to checkout submodules.
+    required: false
+    default: "false"
+outputs:
+  ref:
+    description: The branch, tag or SHA that was checked out.
+  commit:
+    description: The commit SHA that was checked out.
+"#;
+    for version in &["v4.2.2", "v4.2.1", "v4.1.0", "v3.6.0"] {
+        manifests.insert(version.to_string(), checkout_manifest.to_string());
+    }
 
     MockAction {
         owner: "actions".into(),
@@ -230,7 +268,7 @@ pub fn mock_checkout() -> MockAction {
         ],
         refs,
         tags: HashMap::new(),
-        manifests: HashMap::new(),
+        manifests,
     }
 }
 
@@ -241,7 +279,10 @@ pub fn mock_rust_cache() -> MockAction {
 
     refs.insert(
         "v2.7.8".into(),
-        ("tag".into(), "aa7c1c80a07a27a84c0aa76d0cef0aad3830e330".into()),
+        (
+            "tag".into(),
+            "aa7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
+        ),
     );
     tags.insert(
         "aa7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
@@ -250,7 +291,10 @@ pub fn mock_rust_cache() -> MockAction {
 
     refs.insert(
         "v2.7.7".into(),
-        ("tag".into(), "bb7c1c80a07a27a84c0aa76d0cef0aad3830e330".into()),
+        (
+            "tag".into(),
+            "bb7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
+        ),
     );
     tags.insert(
         "bb7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
@@ -259,7 +303,10 @@ pub fn mock_rust_cache() -> MockAction {
 
     refs.insert(
         "v2.7.0".into(),
-        ("tag".into(), "cc7c1c80a07a27a84c0aa76d0cef0aad3830e330".into()),
+        (
+            "tag".into(),
+            "cc7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
+        ),
     );
     tags.insert(
         "cc7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
@@ -268,12 +315,36 @@ pub fn mock_rust_cache() -> MockAction {
 
     refs.insert(
         "v1.4.0".into(),
-        ("tag".into(), "dd7c1c80a07a27a84c0aa76d0cef0aad3830e330".into()),
+        (
+            "tag".into(),
+            "dd7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
+        ),
     );
     tags.insert(
         "dd7c1c80a07a27a84c0aa76d0cef0aad3830e330".into(),
         "cd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
     );
+
+    let mut manifests = HashMap::new();
+    let rust_cache_manifest = r#"
+name: Rust Cache
+description: A GitHub Action that implements smart caching for Rust projects.
+inputs:
+  shared-key:
+    description: An additional key for the shared cache.
+    required: false
+    default: ""
+  cache-on-failure:
+    description: Cache even if the build fails.
+    required: false
+    default: "true"
+outputs:
+  cache-hit:
+    description: Whether there was a cache hit.
+"#;
+    for version in &["v2.7.8", "v2.7.7", "v2.7.0", "v1.4.0"] {
+        manifests.insert(version.to_string(), rust_cache_manifest.to_string());
+    }
 
     MockAction {
         owner: "Swatinem".into(),
@@ -287,6 +358,6 @@ pub fn mock_rust_cache() -> MockAction {
         ],
         refs,
         tags,
-        manifests: HashMap::new(),
+        manifests,
     }
 }

@@ -1,4 +1,5 @@
 pub mod cli;
+pub mod codegen;
 pub mod github;
 pub mod lockfile;
 pub mod oxc;

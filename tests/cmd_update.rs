@@ -1,6 +1,6 @@
 mod support;
 
-use support::mock_github::{mock_checkout, mock_rust_cache, MockGitHubServer};
+use support::mock_github::{MockGitHubServer, mock_checkout, mock_rust_cache};
 use support::project::TestProject;
 
 fn project_with_lockfile(content: &str) -> TestProject {
@@ -25,9 +25,8 @@ fn server_env(
 #[test]
 fn update_within_major() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
-    let p = project_with_lockfile(
-        "actions/checkout v4.1.0 8ade135a41bc03ea155e62e844d188df1ea18608\n",
-    );
+    let p =
+        project_with_lockfile("actions/checkout v4.1.0 8ade135a41bc03ea155e62e844d188df1ea18608\n");
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
     let output = server_env(&p, &["update", "actions/checkout"], &server);
@@ -35,14 +34,17 @@ fn update_within_major() {
 
     snapshot!("output", output);
     snapshot!("diff", before.diff(&after));
+    snapshot!(
+        "dts",
+        p.read_file(".github/ghat/actions/actions__checkout.d.ts")
+    );
 }
 
 #[test]
 fn update_already_latest() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
-    let p = project_with_lockfile(
-        "actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
-    );
+    let p =
+        project_with_lockfile("actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
     let output = server_env(&p, &["update", "actions/checkout"], &server);
@@ -61,7 +63,11 @@ fn update_breaking() {
     );
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
-    let output = server_env(&p, &["update", "--breaking", "Swatinem/rust-cache"], &server);
+    let output = server_env(
+        &p,
+        &["update", "--breaking", "Swatinem/rust-cache"],
+        &server,
+    );
     let after = p.snapshot_glob(".github/ghat/ghat.lock");
 
     snapshot!("output", output);
@@ -118,9 +124,8 @@ fn update_empty_lockfile() {
 #[test]
 fn update_not_found() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
-    let p = project_with_lockfile(
-        "actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
-    );
+    let p =
+        project_with_lockfile("actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
 
     let output = server_env(&p, &["update", "nonexistent/action"], &server);
     snapshot!(output);

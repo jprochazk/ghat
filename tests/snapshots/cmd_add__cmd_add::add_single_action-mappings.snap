@@ -1,0 +1,11 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+globalThis.__GHAT_ACTION_MAPPINGS = {
+  "actions/checkout": {
+    inputs: {
+      "fetch_depth": "fetch-depth"
+    },
+  },
+};

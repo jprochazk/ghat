@@ -1,5 +1,6 @@
+use crate::codegen;
 use crate::github::{
-    parse_version_req, resolve_compatible, resolve_latest, GitHubApi, ResolvedAction,
+    GitHubApi, ResolvedAction, parse_version_req, resolve_compatible, resolve_latest,
 };
 use crate::lockfile::{LockedAction, Lockfile};
 
@@ -116,7 +117,11 @@ pub fn update_actions(
 }
 
 /// CLI entry point for `ghat update`.
-pub fn run(actions: Vec<String>, breaking: bool, github_token: Option<String>) -> miette::Result<()> {
+pub fn run(
+    actions: Vec<String>,
+    breaking: bool,
+    github_token: Option<String>,
+) -> miette::Result<()> {
     let (path, mut lockfile) = super::common::load_lockfile()?;
 
     if lockfile.actions.is_empty() {
@@ -127,6 +132,9 @@ pub fn run(actions: Vec<String>, breaking: bool, github_token: Option<String>) -
     let results = update_actions(&client, &mut lockfile, &actions, breaking)?;
     lockfile.save(&path)?;
 
+    let base = super::common::base_dir();
+    let mut cache = codegen::ManifestCache::load(&base.join("actions/cache.json"))?;
+
     for r in &results {
         match r {
             UpdateResult::Updated {
@@ -134,6 +142,14 @@ pub fn run(actions: Vec<String>, breaking: bool, github_token: Option<String>) -
                 old_version,
                 new,
             } => {
+                let manifest = codegen::get_or_fetch_manifest(
+                    &mut cache,
+                    &client,
+                    name,
+                    &new.sha,
+                    &new.version,
+                )?;
+                codegen::write_action_types(base, name, &manifest)?;
                 eprintln!(
                     "updated {name} {old_version} -> {} ({})",
                     new.version,
@@ -145,6 +161,8 @@ pub fn run(actions: Vec<String>, breaking: bool, github_token: Option<String>) -
             }
         }
     }
+
+    super::common::finalize_codegen(&lockfile, &mut cache)?;
 
     Ok(())
 }
@@ -187,9 +205,11 @@ mod tests {
             update_actions(&mock, &mut lockfile, &["actions/checkout".into()], false).unwrap();
 
         assert_eq!(results.len(), 1);
-        assert!(matches!(&results[0], UpdateResult::Updated { old_version, new, .. }
-            if old_version == "v4.1.0" && new.version == "v4.2.2"
-        ));
+        assert!(
+            matches!(&results[0], UpdateResult::Updated { old_version, new, .. }
+                if old_version == "v4.1.0" && new.version == "v4.2.2"
+            )
+        );
         assert_eq!(lockfile.actions["actions/checkout"].version, "v4.2.2");
     }
 
@@ -267,7 +287,9 @@ mod tests {
         let results =
             update_actions(&mock, &mut lockfile, &["Swatinem/rust-cache".into()], true).unwrap();
 
-        assert!(matches!(&results[0], UpdateResult::Updated { new, .. } if new.version == "v2.7.8"));
+        assert!(
+            matches!(&results[0], UpdateResult::Updated { new, .. } if new.version == "v2.7.8")
+        );
         assert_eq!(lockfile.actions["Swatinem/rust-cache"].version, "v2.7.8");
     }
 
@@ -275,8 +297,7 @@ mod tests {
     fn update_not_found() {
         let mock = mock_checkout();
         let mut lockfile = lockfile_with_checkout();
-        let result =
-            update_actions(&mock, &mut lockfile, &["nonexistent/action".into()], false);
+        let result = update_actions(&mock, &mut lockfile, &["nonexistent/action".into()], false);
         assert!(result.is_err());
     }
 }

@@ -1,0 +1,28 @@
+---
+source: src/codegen.rs
+expression: dts
+---
+/**
+ * A test action for unit tests.
+ * @see https://github.com/test/action
+ */
+declare global {
+  function uses(
+    action: "test/action",
+    options: UsesOptionsRequired<{
+    /** Number of commits to fetch. */
+    fetch_depth?: string;
+    /** The token to use. */
+    repo_token: string;
+    /**
+     * Deprecated.
+     * @deprecated Use something else.
+     */
+    old_input?: string;
+    }>,
+  ): StepRef<{
+    /** The output value. */
+    my_value: string;
+  }>;
+}
+export {};

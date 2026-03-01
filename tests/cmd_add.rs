@@ -1,6 +1,6 @@
 mod support;
 
-use support::mock_github::{mock_checkout, mock_rust_cache, MockGitHubServer};
+use support::mock_github::{MockGitHubServer, mock_checkout, mock_rust_cache};
 use support::project::TestProject;
 
 fn project_with_empty_lockfile() -> TestProject {
@@ -37,6 +37,11 @@ fn add_single_action() {
 
     snapshot!("output", output);
     snapshot!("diff", before.diff(&after));
+    snapshot!(
+        "dts",
+        p.read_file(".github/ghat/actions/actions__checkout.d.ts")
+    );
+    snapshot!("mappings", p.read_file(".github/ghat/actions/mappings.js"));
 }
 
 #[test]
@@ -48,12 +53,24 @@ fn add_multiple_actions() {
     let p = project_with_empty_lockfile();
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
-    let output =
-        server_env(&p, &["add", "actions/checkout@v4.2.2", "Swatinem/rust-cache"], &server);
+    let output = server_env(
+        &p,
+        &["add", "actions/checkout@v4.2.2", "Swatinem/rust-cache"],
+        &server,
+    );
     let after = p.snapshot_glob(".github/ghat/ghat.lock");
 
     snapshot!("output", output);
     snapshot!("diff", before.diff(&after));
+    snapshot!(
+        "checkout_dts",
+        p.read_file(".github/ghat/actions/actions__checkout.d.ts")
+    );
+    snapshot!(
+        "rust_cache_dts",
+        p.read_file(".github/ghat/actions/Swatinem__rust-cache.d.ts")
+    );
+    snapshot!("mappings", p.read_file(".github/ghat/actions/mappings.js"));
 }
 
 #[test]
@@ -85,9 +102,8 @@ fn add_exact_version() {
 #[test]
 fn add_duplicate_skipped() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
-    let p = project_with_lockfile(
-        "actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
-    );
+    let p =
+        project_with_lockfile("actions/checkout v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
     let output = server_env(&p, &["add", "actions/checkout@v4.2.2"], &server);

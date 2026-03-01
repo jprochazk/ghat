@@ -66,7 +66,12 @@ impl Lockfile {
 impl std::fmt::Display for Lockfile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for (name, action) in &self.actions {
-            writeln!(f, "{name} {ver} {sha}", ver = action.version, sha = action.sha)?;
+            writeln!(
+                f,
+                "{name} {ver} {sha}",
+                ver = action.version,
+                sha = action.sha
+            )?;
         }
         Ok(())
     }

@@ -1,0 +1,16 @@
+---
+source: src/codegen.rs
+expression: js
+---
+globalThis.__GHAT_ACTION_MAPPINGS = {
+  "test/action": {
+    inputs: {
+      "fetch_depth": "fetch-depth",
+      "repo_token": "repo-token",
+      "old_input": "old-input"
+    },
+    outputs: {
+      "my_value": "my-value"
+    },
+  },
+};

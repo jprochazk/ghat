@@ -1,0 +1,6 @@
+---
+source: src/codegen.rs
+expression: js
+---
+globalThis.__GHAT_ACTION_MAPPINGS = {
+};

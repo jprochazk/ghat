@@ -1,0 +1,23 @@
+---
+source: tests/cmd_add.rs
+expression: value
+---
+/**
+ * A GitHub Action that implements smart caching for Rust projects.
+ * @see https://github.com/Swatinem/rust-cache
+ */
+declare global {
+  function uses(
+    action: "Swatinem/rust-cache",
+    options?: UsesOptions<{
+    /** An additional key for the shared cache. */
+    shared_key?: string;
+    /** Cache even if the build fails. */
+    cache_on_failure?: string;
+    }>,
+  ): StepRef<{
+    /** Whether there was a cache hit. */
+    cache_hit: string;
+  }>;
+}
+export {};

@@ -1,3 +1,4 @@
+use crate::codegen;
 use crate::lockfile::Lockfile;
 
 #[derive(Debug)]
@@ -58,9 +59,7 @@ pub fn rm_actions(lockfile: &mut Lockfile, names: &[String]) -> miette::Result<V
     let mut results = Vec::new();
     for name in names {
         lockfile.actions.remove(name);
-        results.push(RmResult::Removed {
-            name: name.clone(),
-        });
+        results.push(RmResult::Removed { name: name.clone() });
     }
     Ok(results)
 }
@@ -75,13 +74,19 @@ pub fn run(actions: Vec<String>) -> miette::Result<()> {
     let results = rm_actions(&mut lockfile, &actions)?;
     lockfile.save(&path)?;
 
+    let base = super::common::base_dir();
+    let mut cache = codegen::ManifestCache::load(&base.join("actions/cache.json"))?;
+
     for r in &results {
         match r {
             RmResult::Removed { name } => {
+                codegen::remove_action_types(base, name)?;
                 eprintln!("removed {name}");
             }
         }
     }
+
+    super::common::finalize_codegen(&lockfile, &mut cache)?;
 
     Ok(())
 }

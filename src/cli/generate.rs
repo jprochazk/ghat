@@ -12,7 +12,20 @@ pub fn run() -> miette::Result<()> {
         workflows_dir.display()
     );
 
-    let rt = Runtime::init()?;
+    let mut builder = Runtime::builder();
+
+    let mappings_path = super::common::base_dir().join("actions/mappings.js");
+    match std::fs::read_to_string(&mappings_path) {
+        Ok(s) => builder = builder.mappings(&s),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => {
+            return Err(e)
+                .into_diagnostic()
+                .wrap_err("failed to read mappings.js")
+        }
+    };
+
+    let rt = builder.build()?;
 
     let entries = std::fs::read_dir(&workflows_dir)
         .into_diagnostic()
@@ -29,7 +42,7 @@ pub fn run() -> miette::Result<()> {
 
         if file_name.ends_with(".ts") || file_name.ends_with(".js") {
             log::info!("evaluating workflow: {file_name}");
-            rt.eval_module(&entry.path())?;
+            rt.eval_workflow_definition(&entry.path())?;
         }
     }
 
