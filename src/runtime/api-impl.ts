@@ -173,7 +173,7 @@ declare global {
   let steps_entries: Record<string, any> | null = null;
 
   function next_step_id(): string {
-    return `__step_${step_counter++}`;
+    return `step_${step_counter++}`;
   }
 
   function register_step_outputs(step_id: string, action?: string): any {

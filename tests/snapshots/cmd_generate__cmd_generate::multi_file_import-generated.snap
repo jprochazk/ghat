@@ -16,5 +16,5 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-    - id: __step_0
+    - id: step_0
       run: cargo test --all-features

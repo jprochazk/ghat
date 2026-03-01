@@ -13,7 +13,7 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-    - id: __step_0
+    - id: step_0
       run: |
         echo "step 1"
         if true; then
