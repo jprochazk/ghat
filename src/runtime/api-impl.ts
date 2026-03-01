@@ -1,9 +1,10 @@
 import type * as Output from "./workflow";
-import type * as Builtins from "./api";
 
-declare function __define_workflow(name: string, workflow: Output.Workflow): void;
-declare function __normalize_id(name: string): string;
-declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, string>; outputs?: Record<string, string> }> | undefined;
+declare global {
+  function __define_workflow(name: string, workflow: Output.Workflow): void;
+  function __normalize_id(name: string): string;
+  var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, string>; outputs?: Record<string, string> }> | undefined;
+}
 
 (function() {
   const define_workflow = __define_workflow;
@@ -58,18 +59,18 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
 
   // == Triggers ====================================================
 
-  function triggers<T extends Builtins.Trigger<any>>(trigger: T): T {
+  function triggers<T extends Trigger<any>>(trigger: T): T {
     return trigger;
   }
 
-  function map_trigger(trigger: string[] | Builtins.FilteredTrigger): Output.Push | Output.PullRequest {
+  function map_trigger(trigger: string[] | FilteredTrigger): Output.Push | Output.PullRequest {
     if (Array.isArray(trigger)) {
       return { branches: trigger };
     }
     return trigger;
   }
 
-  function map_triggers(on: Builtins.Trigger<any>): Output.Triggers {
+  function map_triggers(on: Trigger<any>): Output.Triggers {
     const out: Output.Triggers = {};
     if (on.push != null) out.push = map_trigger(on.push);
     if (on.pull_request != null) out.pull_request = map_trigger(on.pull_request);
@@ -84,7 +85,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
     if (!wd.inputs) return {};
     const inputs: Record<string, Output.DispatchInput> = {};
     for (const key of Object.keys(wd.inputs)) {
-      const inp: Builtins.BaseInput<boolean> & { type?: string; default?: any; options?: readonly string[] } = wd.inputs[key];
+      const inp: BaseInput<boolean> & { type?: string; default?: any; options?: readonly string[] } = wd.inputs[key];
       const out: Output.DispatchInput = {};
       if (inp.description != null) out.description = inp.description;
       if (inp.type != null) out.type = inp.type;
@@ -98,25 +99,27 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
 
   // == Mapping helpers =============================================
 
-  function map_concurrency(c: Builtins.Concurrency): Output.Concurrency {
+  function map_concurrency(c: Concurrency): Output.Concurrency {
     if (typeof c === "string") return c;
     const out: Record<string, any> = { group: c.group };
     if (c.cancel_in_progress != null) out["cancel-in-progress"] = c.cancel_in_progress;
     return out as Output.Concurrency;
   }
 
-  function map_defaults(d: Builtins.Defaults): Output.Defaults {
+  function map_defaults(d: Defaults): Output.Defaults {
     const out: Output.Defaults = {};
     if (d.run) {
       const run: Output.RunDefaults = {};
       if (d.run.shell != null) run.shell = d.run.shell;
       if (d.run.working_directory != null) run["working-directory"] = d.run.working_directory;
       out.run = run;
+    } else {
+      out.run = { shell: "bash --noprofile --norc -euo pipefail {0}" };
     }
     return out;
   }
 
-  function map_permissions(p: "write-all" | "read-all" | Builtins.ScopedPermissions): Output.Permissions {
+  function map_permissions(p: "write-all" | "read-all" | ScopedPermissions): Output.Permissions {
     if (typeof p === "string") return p;
     const out: Output.ScopedPermissions = {};
     if (p.contents != null) out.contents = p.contents;
@@ -149,7 +152,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
 
   // == Steps =========================================================
 
-  function map_step_options(opts: Builtins.StepOptions | Builtins.RunOptions | undefined): Partial<Output.Step> {
+  function map_step_options(opts: StepOptions | RunOptions | undefined): Partial<Output.Step> {
     if (!opts) return {};
     const out: Partial<Output.Step> & Record<string, any> = {};
     if (opts.name != null) out.name = opts.name;
@@ -197,7 +200,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
     return { outputs: outputs_proxy };
   }
 
-  function run_builtin(script: string, options?: Builtins.RunOptions): Builtins.StepRef {
+  function run_builtin(script: string, options?: RunOptions): StepRef {
     if (current_steps == null) throw new Error("run() can only be called inside steps()");
     const step_id = next_step_id();
     const step: Output.Step = { id: step_id, run: script, ...map_step_options(options) };
@@ -205,7 +208,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
     return register_step_outputs(step_id);
   }
 
-  function uses_builtin(action: string, options?: any): Builtins.StepRef {
+  function uses_builtin(action: string, options?: any): StepRef {
     if (current_steps == null) throw new Error("uses() can only be called inside steps()");
     const step_id = next_step_id();
     const step: Output.Step & Record<string, any> = { id: step_id, uses: action, ...map_step_options(options) };
@@ -245,7 +248,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
     });
   }
 
-  function map_job(name: string, job_def: Builtins.Job<any, any, any, any>, jobs: Record<string, Output.Job>): JobRefInternal {
+  function map_job(name: string, job_def: Job<any, any, any, any>, jobs: Record<string, Output.Job>): JobRefInternal {
     const id = normalize_id(name);
 
     // Resolve needs
@@ -338,7 +341,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
 
   // == workflow =====================================================
 
-  function workflow(name: string, definition: Builtins.Workflow<any>): void {
+  function workflow(name: string, definition: Workflow<any>): void {
     const on = map_triggers(definition.on);
 
     const wf: Output.Workflow = {
@@ -372,7 +375,7 @@ declare var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, str
 
     // Jobs
     const jobs_ctx = build_context(["github", "inputs", "vars"], `${name} > jobs`);
-    (jobs_ctx as any).job = function(job_name: string, job_def: Builtins.Job<any, any, any, any>): JobRefInternal {
+    (jobs_ctx as any).job = function(job_name: string, job_def: Job<any, any, any, any>): JobRefInternal {
       return map_job(job_name, job_def, wf.jobs);
     };
 

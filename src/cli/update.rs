@@ -184,17 +184,17 @@ mod tests {
         lockfile
     }
 
-    fn lockfile_with_rust_cache() -> Lockfile {
-        let mut lockfile = Lockfile::new();
-        lockfile.actions.insert(
-            "Swatinem/rust-cache".into(),
-            LockedAction {
-                version: "v2.7.0".into(),
-                sha: "bd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
-            },
-        );
-        lockfile
-    }
+    // fn lockfile_with_rust_cache() -> Lockfile {
+    //     let mut lockfile = Lockfile::new();
+    //     lockfile.actions.insert(
+    //         "Swatinem/rust-cache".into(),
+    //         LockedAction {
+    //             version: "v2.7.0".into(),
+    //             sha: "bd47c6ad4b02e050fd481d890b2ea34778fd09d6".into(),
+    //         },
+    //     );
+    //     lockfile
+    // }
 
     #[test]
     fn update_within_major() {

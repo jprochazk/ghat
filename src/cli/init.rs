@@ -3,7 +3,6 @@ use std::path::Path;
 use miette::{Context, IntoDiagnostic};
 
 const API_DTS: &str = include_str!("../runtime/api.d.ts");
-const WORKFLOW_DTS: &str = include_str!("../runtime/workflow.d.ts");
 
 const TSCONFIG: &str = r#"{
   "compilerOptions": {
@@ -39,7 +38,6 @@ pub fn run() -> miette::Result<()> {
     }
 
     write_if_changed(&base.join("types/api.d.ts"), API_DTS)?;
-    write_if_changed(&base.join("types/workflow.d.ts"), WORKFLOW_DTS)?;
     write_if_changed(&base.join("tsconfig.json"), TSCONFIG)?;
 
     let lockfile = base.join("ghat.lock");

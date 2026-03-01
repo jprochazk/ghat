@@ -51,8 +51,8 @@ After `ghat init`, your repo looks like this:
 ```
 .github/ghat/
   workflows/     # Your workflow definitions (.ts)
-  types/         # Generated type definitions (api.d.ts, workflow.d.ts)
-  actions/       # Generated action types and mappings
+  types/         # Baseline type definitions
+  actions/       # Generated action types
   tsconfig.json
   ghat.lock
 ```
@@ -114,8 +114,8 @@ jobs(ctx) {
 Add a shell script step.
 
 ```typescript
-run("echo hello")
-run("cargo test", { name: "Run tests", timeout_minutes: 10 })
+run("echo hello") // defaults to "shell: bash --noprofile --norc -euo pipefail {0}"
+run("cargo test", { shell: "bash" })
 ```
 
 ### `uses(action, options?)`
