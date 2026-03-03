@@ -1,7 +1,0 @@
----
-source: tests/cmd_check.rs
-expression: output
----
-exit_code: 0
----stderr---
-check passed

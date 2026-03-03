@@ -1,8 +1,0 @@
----
-source: src/runtime/tests.rs
-expression: "snapshot_err(files, &err)"
----
-=== /workflows/bad.js ===
-__define_workflow("Bad", { invalid: true });
-=== error ===
-String(Ok("missing field `on`"))

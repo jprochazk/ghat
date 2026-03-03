@@ -2039,9 +2039,9 @@ dependencies = [
 
 [[package]]
 name = "tsgo"
-version = "0.1.0"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6b1d3f67ecbea8fd33cfbb3c7900639ecd8a9674f29b98a50efc7df30a232c79"
+checksum = "98e9c0391f84f1c6fa0963b5c89d15b7dc7984a90b94f0abffa6ae6038156e84"
 dependencies = [
  "serde",
  "serde_json",

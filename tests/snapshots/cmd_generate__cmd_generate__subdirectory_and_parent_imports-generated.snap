@@ -1,0 +1,34 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+--- .github/workflows/generated_subdir_import.yaml ---
+name: Subdir Import
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: step_0
+      run: cargo check
+    - id: step_1
+      run: hello
+--- .github/workflows/ghat_check.yaml ---
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code

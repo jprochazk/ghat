@@ -1,0 +1,19 @@
+---
+source: tests/cmd_generate.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+    Checking workflow definitions
+Error: 
+  x type-check failed with 1 error(s)
+
+Error: TS2307
+
+  x TS2307: Cannot find module './_nonexistent.ts' or its corresponding type
+  | declarations.
+   ,-[[ROOT]/.github/ghat/workflows/bad.ts:1:21]
+ 1 | import { foo } from "./_nonexistent.ts"
+   :                     ^^^^^^^^^^^^^^^^^^^
+ 2 | foo()
+   `----

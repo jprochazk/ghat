@@ -1,0 +1,17 @@
+---
+source: tests/cmd_generate.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+  Evaluating workflow definitions
+Error: 
+  x unknown context 'secerts' in 'Bad > run_name'
+  | 
+  | Stack trace:
+  |     at get (eval_script:45:14)
+  |     at run_name (.github/ghat/workflows/bad.ts:3:1)
+  |     at resolve_value (eval_script:50:41)
+  |     at workflow (eval_script:380:35)
+  |     at <anonymous> (.github/ghat/workflows/bad.ts:2:7)
+  |

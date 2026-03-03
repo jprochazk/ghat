@@ -1,0 +1,122 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+--- .github/workflows/generated_context_proxies.yaml ---
+name: Context Proxies
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: step_0
+      run: echo sha=${{ github.sha }} runner=${{ runner.os }} secret=${{ secrets.TOKEN }}
+--- .github/workflows/generated_deploy_context.yaml ---
+name: Deploy Context
+run-name: Deploy to ${{ inputs.env }}
+on:
+  workflow_dispatch:
+    inputs:
+      env:
+        type: choice
+        required: true
+        options:
+        - staging
+        - production
+env:
+  TOKEN: ${{ secrets.GITHUB_TOKEN }}
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+    - id: step_0
+      run: echo deploy
+--- .github/workflows/generated_needs_and_outputs.yaml ---
+name: Needs And Outputs
+on:
+  push:
+    branches:
+    - main
+jobs:
+  build_artifacts:
+    name: Build Artifacts
+    runs-on: ubuntu-latest
+    outputs:
+      artifact: build.tar.gz
+      version: 1.0.0
+    steps:
+    - id: step_0
+      run: cargo build --release
+  deploy_to_production:
+    name: Deploy To Production
+    runs-on: ubuntu-latest
+    needs:
+    - build_artifacts
+    if: ${{ needs.build_artifacts.result == 'success' }}
+    env:
+      VERSION: ${{ needs.build_artifacts.outputs.version }}
+    timeout-minutes: 30
+    steps:
+    - id: step_0
+      run: echo deploying ${{ needs.build_artifacts.outputs.artifact }}
+--- .github/workflows/generated_run_options.yaml ---
+name: Run Options
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: step_0
+      run: echo hello
+    - id: step_1
+      name: Run tests
+      run: cargo test
+      shell: bash
+      working-directory: ./crates
+      env:
+        RUST_LOG: debug
+      if: always()
+      timeout-minutes: 30
+      continue-on-error: true
+--- .github/workflows/generated_step_outputs.yaml ---
+name: Step Outputs
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+    - id: step_0
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+    - id: step_1
+      run: echo checked out ${{ steps.step_0.outputs.ref }}
+--- .github/workflows/ghat_check.yaml ---
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code

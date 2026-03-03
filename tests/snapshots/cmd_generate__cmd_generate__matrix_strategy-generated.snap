@@ -1,0 +1,40 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+--- .github/workflows/generated_ci.yaml ---
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node:
+        - '18'
+        - '20'
+        os:
+        - ubuntu-latest
+        - macos-latest
+    steps:
+    - id: step_0
+      run: echo ${{ matrix.os }} ${{ matrix.node }}
+--- .github/workflows/ghat_check.yaml ---
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code

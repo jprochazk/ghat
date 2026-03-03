@@ -1,9 +1,0 @@
----
-source: src/runtime/tests.rs
-expression: "snapshot_err(files, &err)"
----
-=== /workflows/bad.ts ===
-import { foo } from "./_nonexistent.ts";
-foo();
-=== error ===
-Error loading module '/workflows/_nonexistent.ts': /workflows/_nonexistent.ts

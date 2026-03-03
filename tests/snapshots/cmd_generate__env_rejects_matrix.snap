@@ -1,0 +1,18 @@
+---
+source: tests/cmd_generate.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+  Evaluating workflow definitions
+Error: 
+  x context 'matrix' is not available in 'Bad > env' (available: github,
+  | secrets, inputs, vars)
+  | 
+  | Stack trace:
+  |     at get (eval_script:43:96)
+  |     at env (.github/ghat/workflows/bad.ts:3:1)
+  |     at resolve_value (eval_script:50:41)
+  |     at workflow (eval_script:403:27)
+  |     at <anonymous> (.github/ghat/workflows/bad.ts:2:7)
+  |

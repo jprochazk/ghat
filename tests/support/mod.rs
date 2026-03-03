@@ -19,7 +19,7 @@ macro_rules! snapshot {
     };
     ($name:literal, $expr:expr) => {
         let value = $expr;
-        insta::assert_snapshot!(format!("{}-{}", insta::_function_name!(), $name), value)
+        insta::assert_snapshot!(format!("{}-{}", insta::_function_name!().replace("::", "__"), $name), value)
     };
     ($($tt:tt)*) => {
         insta::assert_snapshot!($($tt)*)

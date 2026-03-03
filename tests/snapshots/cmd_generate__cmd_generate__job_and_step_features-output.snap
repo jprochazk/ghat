@@ -1,0 +1,14 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+exit_code: 0
+---stderr---
+  Evaluating workflow definitions
+       Wrote .github/workflows/generated_needs_and_outputs.yaml
+       Wrote .github/workflows/generated_context_proxies.yaml
+       Wrote .github/workflows/generated_step_outputs.yaml
+       Wrote .github/workflows/generated_run_options.yaml
+       Wrote .github/workflows/generated_deploy_context.yaml
+       Wrote .github/workflows/ghat_check.yaml
+    Finished generated 6 workflows in [TIME]

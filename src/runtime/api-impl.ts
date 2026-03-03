@@ -63,6 +63,14 @@ declare global {
     return trigger;
   }
 
+  function input_builtin(type: string, options?: any): any {
+    return { type, ...options };
+  }
+
+  function matrix(matrix: any): any {
+    return matrix;
+  }
+
   function map_trigger(trigger: string[] | FilteredTrigger): Output.Push | Output.PullRequest {
     if (Array.isArray(trigger)) {
       return { branches: trigger };
@@ -411,6 +419,8 @@ declare global {
 
   globalThis.workflow = workflow;
   globalThis.triggers = triggers;
+  globalThis.input = input_builtin;
+  globalThis.matrix = matrix;
   globalThis.run = run_builtin;
   globalThis.uses = uses_builtin as any;
 })();
