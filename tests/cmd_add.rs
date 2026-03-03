@@ -102,8 +102,9 @@ fn add_exact_version() {
 #[test]
 fn add_duplicate_skipped() {
     let server = MockGitHubServer::new().add(mock_checkout()).start();
-    let p =
-        project_with_lockfile("actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n");
+    let p = project_with_lockfile(
+        "actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
+    );
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 
     let output = server_env(&p, &["add", "actions/checkout@v4.2.2"], &server);
@@ -138,9 +139,7 @@ fn add_invalid_ref() {
 
 #[test]
 fn add_branch_ref() {
-    let server = MockGitHubServer::new()
-        .add(mock_rust_toolchain())
-        .start();
+    let server = MockGitHubServer::new().add(mock_rust_toolchain()).start();
     let p = project_with_empty_lockfile();
     let before = p.snapshot_glob(".github/ghat/ghat.lock");
 

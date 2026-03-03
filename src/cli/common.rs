@@ -55,7 +55,7 @@ pub fn eval_workflow_definitions() -> miette::Result<Vec<(String, Workflow)>> {
         Err(e) => {
             return Err(e)
                 .into_diagnostic()
-                .wrap_err("failed to read mappings.js")
+                .wrap_err("failed to read mappings.js");
         }
     };
 

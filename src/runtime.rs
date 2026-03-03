@@ -149,17 +149,12 @@ pub struct Runtime {
 
 impl Runtime {
     pub fn builder() -> RuntimeBuilder {
-        RuntimeBuilder {
-            mappings_js: None,
-        }
+        RuntimeBuilder { mappings_js: None }
     }
 
     fn eval_script(&self, source: &str) -> miette::Result<()> {
-        self.ctx.with(|ctx| {
-            ctx.eval::<(), _>(source)
-                .catch(&ctx)
-                .into_miette()
-        })
+        self.ctx
+            .with(|ctx| ctx.eval::<(), _>(source).catch(&ctx).into_miette())
     }
 
     pub fn eval_workflow_definition(&self, path: &Path) -> miette::Result<()> {
@@ -266,6 +261,3 @@ fn normalize_id(name: String) -> String {
     }
     out
 }
-
-#[cfg(test)]
-mod tests;

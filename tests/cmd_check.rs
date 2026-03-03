@@ -45,10 +45,7 @@ fn ok_with_workflow() {
 fn type_error() {
     let p = TestProject::new()
         .init()
-        .file(
-            ".github/ghat/workflows/bad.ts",
-            "const x: string = 42;\n",
-        )
+        .file(".github/ghat/workflows/bad.ts", "const x: string = 42;\n")
         .build();
 
     let output = p.ghat(&["check"]).run();

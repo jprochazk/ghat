@@ -74,9 +74,8 @@ impl TypeCheckErrors {
                     severity: match d.category {
                         tsgo::DiagnosticCategory::Error => miette::Severity::Error,
                         tsgo::DiagnosticCategory::Warning => miette::Severity::Warning,
-                        tsgo::DiagnosticCategory::Suggestion | tsgo::DiagnosticCategory::Message => {
-                            miette::Severity::Advice
-                        }
+                        tsgo::DiagnosticCategory::Suggestion
+                        | tsgo::DiagnosticCategory::Message => miette::Severity::Advice,
                     },
                     source,
                     span,

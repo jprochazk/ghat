@@ -65,10 +65,7 @@ pub fn run(name: Option<String>) -> miette::Result<()> {
     let output_path = workflows_dir.join(&file_name);
 
     if output_path.exists() {
-        return Err(miette::miette!(
-            "{} already exists",
-            output_path.display()
-        ));
+        return Err(miette::miette!("{} already exists", output_path.display()));
     }
 
     let workflow_name = name
