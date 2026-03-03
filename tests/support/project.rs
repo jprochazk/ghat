@@ -131,11 +131,12 @@ impl TestProject {
         for entry in glob::glob(&full_pattern).expect("invalid glob pattern") {
             let path = entry.expect("glob error");
             if path.is_file() {
-                let rel = path
-                    .strip_prefix(self.dir.path())
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string();
+                let rel = normalize_path(
+                    &path
+                        .strip_prefix(self.dir.path())
+                        .unwrap()
+                        .to_string_lossy(),
+                );
                 let content = read_file_or_binary(&path);
                 files.insert(rel, content);
             }
@@ -165,11 +166,12 @@ fn collect_recursive(root: &Path, dir: &Path, files: &mut BTreeMap<String, Strin
         if path.is_dir() {
             collect_recursive(root, &path, files);
         } else {
-            let rel = path
-                .strip_prefix(root)
-                .unwrap()
-                .to_string_lossy()
-                .to_string();
+            let rel = normalize_path(
+                &path
+                    .strip_prefix(root)
+                    .unwrap()
+                    .to_string_lossy(),
+            );
             let content = read_file_or_binary(&path);
             files.insert(rel, content);
         }
@@ -293,9 +295,24 @@ impl CommandRunner {
     }
 }
 
+/// Normalize a relative path to always use forward slashes.
+fn normalize_path(p: &str) -> String {
+    p.replace('\\', "/")
+}
+
 /// Replace temp directory paths and unstable timing values in command output.
 fn sanitize_output(raw: &[u8], dir_str: &str) -> String {
-    let s = String::from_utf8_lossy(raw).replace(dir_str, "[ROOT]");
+    let s = String::from_utf8_lossy(raw);
+    // On macOS, /var is a symlink to /private/var, so the binary may emit
+    // canonicalized paths that include the /private prefix.
+    let s = if cfg!(target_os = "macos") {
+        s.replace(&format!("/private{dir_str}"), "[ROOT]")
+            .replace(dir_str, "[ROOT]")
+    } else {
+        s.replace(dir_str, "[ROOT]")
+    };
+    // Normalize backslash paths to forward slashes (Windows).
+    let s = s.replace("[ROOT]\\", "[ROOT]/");
     // Redact durations like "in 42.02ms", "in 1.23s", "in 350.00µs"
     let mut result = String::with_capacity(s.len());
     let mut rest = s.as_str();

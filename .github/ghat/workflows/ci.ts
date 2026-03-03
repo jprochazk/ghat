@@ -30,7 +30,9 @@ workflow("CI", {
         uses("actions/setup-go", {
           with: { go_version: "1.26" }
         })
-        uses("Swatinem/rust-cache")
+        uses("Swatinem/rust-cache", {
+          with: { cache_on_failure: "true" }
+        })
         uses("dtolnay/rust-toolchain", {
           with: { toolchain: ctx.matrix.toolchain }
         })
