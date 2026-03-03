@@ -13,11 +13,13 @@ jobs:
     strategy:
       matrix:
         include:
-        - runner: ubuntu-latest
+        - runner: ubuntu-24.04
           target: ''
-        - runner: macos-latest
+        - runner: ubuntu-24.04-arm
           target: ''
-        - runner: windows-latest
+        - runner: macos-26
+          target: ''
+        - runner: windows-2025
           target: x86_64-pc-windows-gnu
     steps:
     - id: step_0
