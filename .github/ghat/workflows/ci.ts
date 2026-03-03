@@ -29,7 +29,7 @@ workflow("CI", {
         uses("actions/checkout")
         uses("Swatinem/rust-cache")
         uses("dtolnay/rust-toolchain", {
-          with: { toolchain: "stable", targets: ctx.matrix.target }
+          with: { toolchain: `stable-${ctx.matrix.target}` }
         })
         run("cargo test")
       }
