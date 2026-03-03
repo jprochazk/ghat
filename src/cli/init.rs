@@ -4,6 +4,23 @@ use miette::{Context, IntoDiagnostic};
 
 const API_DTS: &str = include_str!("../runtime/api.d.ts");
 
+const CHECK_WORKFLOW: &str = "\
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code
+";
+
 const TSCONFIG: &str = r#"{
   "compilerOptions": {
     "strict": true,
@@ -48,8 +65,19 @@ pub fn run() -> miette::Result<()> {
         log::info!("created {}", lockfile.display());
     }
 
+    write_check_workflow()?;
+
     super::style::status("Initialized", format!("ghat project in {}", base.display()));
     Ok(())
+}
+
+/// Write the `ghat_check.yaml` workflow to `.github/workflows/`.
+pub fn write_check_workflow() -> miette::Result<()> {
+    let output_dir = Path::new(".github/workflows");
+    std::fs::create_dir_all(output_dir)
+        .into_diagnostic()
+        .wrap_err("failed to create .github/workflows directory")?;
+    write_if_changed(&output_dir.join("ghat_check.yaml"), CHECK_WORKFLOW)
 }
 
 /// Write a file only if the contents have changed (or it doesn't exist yet).

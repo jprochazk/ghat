@@ -8,3 +8,18 @@ expression: value
 [324 bytes]
 --- .github/ghat/types/api.d.ts ---
 [37931 bytes]
+--- .github/workflows/ghat_check.yaml ---
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code

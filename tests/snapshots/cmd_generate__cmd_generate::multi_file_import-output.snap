@@ -7,4 +7,5 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_ci.yaml
-    Finished generated 1 workflow in [TIME]
+       Wrote .github/workflows/ghat_check.yaml
+    Finished generated 2 workflows in [TIME]
