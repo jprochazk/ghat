@@ -1,7 +1,5 @@
 use std::collections::HashMap;
-use std::io::{BufRead, BufReader, Write};
-use std::net::TcpListener;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use std::thread;
 
 /// Mock data for a single GitHub action.
@@ -29,8 +27,8 @@ pub struct MockGitHubServer {
 /// A running mock server that can be dropped to stop.
 pub struct RunningMockServer {
     url: String,
+    server: Arc<tiny_http::Server>,
     _handle: thread::JoinHandle<()>,
-    shutdown: Arc<Mutex<bool>>,
 }
 
 impl MockGitHubServer {
@@ -48,45 +46,50 @@ impl MockGitHubServer {
 
     /// Start the server on a random port. Returns a running server with `.url()`.
     pub fn start(self) -> RunningMockServer {
-        let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind");
-        let port = listener.local_addr().unwrap().port();
+        let server =
+            Arc::new(tiny_http::Server::http("127.0.0.1:0").expect("failed to start mock server"));
+        let port = server.server_addr().to_ip().unwrap().port();
         let url = format!("http://127.0.0.1:{port}");
-        let shutdown = Arc::new(Mutex::new(false));
-        let shutdown_clone = shutdown.clone();
 
-        // Build route table
         let routes = build_routes(&self.actions);
+        let server_clone = server.clone();
 
         let handle = thread::spawn(move || {
-            listener
-                .set_nonblocking(true)
-                .expect("failed to set nonblocking");
             loop {
-                if *shutdown_clone.lock().unwrap() {
-                    break;
-                }
-                match listener.accept() {
-                    Ok((stream, _)) => {
-                        let routes = routes.clone();
-                        // Handle in the same thread (tests are sequential per-server)
-                        handle_connection(stream, &routes);
-                    }
-                    Err(ref e) if e.kind() == std::io::ErrorKind::WouldBlock => {
-                        thread::sleep(std::time::Duration::from_millis(5));
-                        continue;
-                    }
-                    Err(e) => {
-                        eprintln!("mock server accept error: {e}");
-                        break;
-                    }
-                }
+                let request = match server_clone.recv() {
+                    Ok(req) => req,
+                    Err(_) => break, // server was unblocked/shut down
+                };
+
+                let path = request.url().to_string();
+
+                let (status_code, body) = if let Some((code, body)) = routes.get(&path) {
+                    (*code, body.clone())
+                } else {
+                    (
+                        404,
+                        format!(r#"{{"message":"Not Found","path":"{path}"}}"#),
+                    )
+                };
+
+                let header = tiny_http::Header::from_bytes(
+                    &b"Content-Type"[..],
+                    &b"application/json"[..],
+                )
+                .unwrap();
+
+                let response = tiny_http::Response::from_string(body)
+                    .with_status_code(status_code)
+                    .with_header(header);
+
+                let _ = request.respond(response);
             }
         });
 
         RunningMockServer {
             url,
+            server,
             _handle: handle,
-            shutdown,
         }
     }
 }
@@ -99,7 +102,7 @@ impl RunningMockServer {
 
 impl Drop for RunningMockServer {
     fn drop(&mut self) {
-        *self.shutdown.lock().unwrap() = true;
+        self.server.unblock();
     }
 }
 
@@ -154,48 +157,6 @@ fn build_routes(actions: &[MockAction]) -> HashMap<String, (u16, String)> {
     }
 
     routes
-}
-
-fn handle_connection(mut stream: std::net::TcpStream, routes: &HashMap<String, (u16, String)>) {
-    let mut reader = BufReader::new(stream.try_clone().unwrap());
-    let mut request_line = String::new();
-    if reader.read_line(&mut request_line).is_err() {
-        return;
-    }
-
-    // Parse "GET /path HTTP/1.1"
-    let parts: Vec<&str> = request_line.split_whitespace().collect();
-    if parts.len() < 2 {
-        return;
-    }
-    let path = parts[1];
-
-    // Consume remaining headers
-    loop {
-        let mut line = String::new();
-        if reader.read_line(&mut line).is_err() || line.trim().is_empty() {
-            break;
-        }
-    }
-
-    let (status, body) = if let Some((code, body)) = routes.get(path) {
-        (*code, body.clone())
-    } else {
-        (404, format!(r#"{{"message":"Not Found","path":"{path}"}}"#))
-    };
-
-    let status_text = match status {
-        200 => "OK",
-        404 => "Not Found",
-        _ => "Unknown",
-    };
-
-    let response = format!(
-        "HTTP/1.1 {status} {status_text}\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
-        body.len()
-    );
-    let _ = stream.write_all(response.as_bytes());
-    let _ = stream.flush();
 }
 
 // Pre-built mock actions matching the test data in src/github.rs::testing
