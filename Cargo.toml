@@ -6,6 +6,7 @@ repository = "https://github.com/jprochazk/ghat"
 license = "MIT OR Apache-2.0"
 description = "GitHub Actions in TypeScript"
 readme = "README.md"
+exclude = ["tests"]
 
 [dependencies]
 clap = { version = "4.5.58", features = ["derive", "env"] }
