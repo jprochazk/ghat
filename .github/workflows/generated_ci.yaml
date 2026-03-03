@@ -9,7 +9,16 @@ permissions:
 jobs:
   test:
     name: Test
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+        - runner: ubuntu-latest
+          target: ''
+        - runner: macos-latest
+          target: ''
+        - runner: windows-latest
+          target: x86_64-pc-windows-gnu
     steps:
     - id: step_0
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -19,5 +28,6 @@ jobs:
       uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
       with:
         toolchain: stable
+        targets: ${{ matrix.target }}
     - id: step_3
       run: cargo test
