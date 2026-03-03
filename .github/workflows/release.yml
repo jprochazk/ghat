@@ -128,7 +128,9 @@ jobs:
             echo "$HOME/.cargo/bin" >> $GITHUB_PATH
           fi
       - name: "Install Go"
-        uses: "actions/setup-go@v5"
+        uses: "actions/setup-go@v6"
+        with:
+          "go-version": 1.26
       - name: Install dist
         run: ${{ matrix.install_dist.run }}
       # Get the dist-manifest
