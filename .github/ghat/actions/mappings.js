@@ -36,4 +36,16 @@ globalThis.__GHAT_ACTION_MAPPINGS = {
       "github_server_url": "github-server-url"
     },
   },
+  "actions/setup-go": {
+    inputs: {
+      "go_version": "go-version",
+      "go_version_file": "go-version-file",
+      "check_latest": "check-latest",
+      "cache_dependency_path": "cache-dependency-path"
+    },
+    outputs: {
+      "go_version": "go-version",
+      "cache_hit": "cache-hit"
+    },
+  },
 };

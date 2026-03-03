@@ -27,6 +27,9 @@ workflow("CI", {
 
       steps(ctx) {
         uses("actions/checkout")
+        uses("actions/setup-go", {
+          with: { go_version: "1.26" }
+        })
         uses("Swatinem/rust-cache")
         uses("dtolnay/rust-toolchain", {
           with: { toolchain: ctx.matrix.toolchain }

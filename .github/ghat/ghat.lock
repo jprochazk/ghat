@@ -1,3 +1,4 @@
 Swatinem/rust-cache tag:v2.8.2 779680da715d629ac1d338a641029a2f4372abb5
 actions/checkout tag:v6.0.2 de0fac2e4500dabe0009e67214ff5f5447ce83dd
+actions/setup-go tag:v6.3.0 4b73464bb391d4059bd26b0524d20df3927bd417
 dtolnay/rust-toolchain tag:v1 e97e2d8cc328f1b50210efc529dca0028893a2d9
