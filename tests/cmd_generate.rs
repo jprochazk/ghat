@@ -587,3 +587,33 @@ foo()
     assert_ne!(output.exit_code, 0);
     snapshot!(output);
 }
+
+#[test]
+fn context_proxy_direct_return() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Test", {
+      // Direct return of proxy should produce ${{ matrix.runner }}, not ${{ matrix.runner.toJSON }}
+      runs_on: (ctx) => ctx.matrix.runner,
+      strategy: matrix({
+        runner: ["ubuntu-latest", "macos-latest"],
+      }),
+      steps(ctx) {
+        run("echo hello")
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!("output", output);
+    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+}

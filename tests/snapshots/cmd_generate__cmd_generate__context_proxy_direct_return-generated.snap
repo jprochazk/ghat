@@ -1,0 +1,24 @@
+---
+source: tests/cmd_generate.rs
+expression: value
+---
+--- .github/workflows/generated_ci.yaml ---
+name: CI
+on:
+  push:
+    branches:
+    - main
+jobs:
+  test:
+    name: Test
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        runner:
+        - ubuntu-latest
+        - macos-latest
+    steps:
+    - id: step_0
+      run: echo hello
+--- .github/workflows/ghat_check.yaml ---
+[268 bytes]

@@ -52,6 +52,20 @@ declare global {
 
   // == Value resolution ============================================
 
+  /** Recursively convert any remaining proxy objects to their expression strings. */
+  function coerce(v: any): any {
+    if (typeof v === "function") return String(v);
+    if (Array.isArray(v)) return v.map(coerce);
+    if (typeof v === "object" && v !== null) {
+      const out: Record<string, any> = {};
+      for (const [k, val] of Object.entries(v)) {
+        out[k] = coerce(val);
+      }
+      return out;
+    }
+    return v;
+  }
+
   function resolve_value<T>(v: T | ((ctx: any) => T), ctx: Record<string, any>): T {
     if (typeof v === "function") return (v as (ctx: any) => T)(ctx);
     return v;
@@ -414,7 +428,7 @@ declare global {
 
     definition.jobs(jobs_ctx);
 
-    define_workflow(name, wf);
+    define_workflow(name, coerce(wf));
   }
 
   globalThis.workflow = workflow;
