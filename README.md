@@ -42,7 +42,9 @@ This creates `.github/workflows/generated_ci.yaml`.
 
 GitHub Actions workflows are YAML files with no type safety. Typos in input names, missing required fields, and version drift across actions are common sources of CI failures that only surface at runtime.
 
-ghat lets you write workflows in TypeScript instead. Actions are pinned to commit SHAs in a lockfile, and their inputs/outputs are type-checked. If you misspell an input or pass the wrong type, you get an error before the workflow ever runs.
+`ghat` lets you write workflows in TypeScript instead. Actions are pinned to commit SHAs in a lockfile, and their inputs/outputs are type-checked. If you misspell an input or pass the wrong type, you get an error before the workflow ever runs.
+
+There is no lock-in: `ghat`-generated workflows have no dependency on `ghat`. You can simply delete `.github/ghat` and continue editing the generated workflows manually.
 
 ## Project structure
 
