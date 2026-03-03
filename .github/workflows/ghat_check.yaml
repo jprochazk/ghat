@@ -1,0 +1,14 @@
+name: ghat check
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: ghat
+      - run: ghat generate
+      - run: git diff --exit-code
