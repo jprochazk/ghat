@@ -15,10 +15,10 @@ workflow("CI", {
         fail_fast: false,
         matrix: matrix({
           include: [
-            { runner: "ubuntu-24.04", target: "" },
-            { runner: "ubuntu-24.04-arm", target: "" },
-            { runner: "macos-26", target: "" },
-            { runner: "windows-2025", target: "x86_64-pc-windows-gnu" },
+            { runner: "ubuntu-24.04", toolchain: "stable" },
+            { runner: "ubuntu-24.04-arm", toolchain: "stable" },
+            { runner: "macos-26", toolchain: "stable" },
+            { runner: "windows-2025", toolchain: "stable-x86_64-pc-windows-gnu" },
           ]
         })
       },
@@ -29,7 +29,7 @@ workflow("CI", {
         uses("actions/checkout")
         uses("Swatinem/rust-cache")
         uses("dtolnay/rust-toolchain", {
-          with: { toolchain: `stable-${ctx.matrix.target}` }
+          with: { toolchain: ctx.matrix.toolchain }
         })
         run("cargo test")
       }

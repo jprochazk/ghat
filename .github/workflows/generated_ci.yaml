@@ -14,13 +14,13 @@ jobs:
       matrix:
         include:
         - runner: ubuntu-24.04
-          target: ''
+          toolchain: stable
         - runner: ubuntu-24.04-arm
-          target: ''
+          toolchain: stable
         - runner: macos-26
-          target: ''
+          toolchain: stable
         - runner: windows-2025
-          target: x86_64-pc-windows-gnu
+          toolchain: stable-x86_64-pc-windows-gnu
       fail-fast: false
     steps:
     - id: step_0
@@ -30,6 +30,6 @@ jobs:
     - id: step_2
       uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
       with:
-        toolchain: stable-${{ matrix.target }}
+        toolchain: ${{ matrix.toolchain }}
     - id: step_3
       run: cargo test
