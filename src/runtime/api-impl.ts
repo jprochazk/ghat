@@ -168,7 +168,7 @@ declare global {
       if (s.max_parallel != null) out["max-parallel"] = s.max_parallel;
       return out;
     }
-    // Raw matrix value — the strategy IS the matrix
+    // Raw matrix value - the strategy IS the matrix
     return { matrix: s };
   }
 

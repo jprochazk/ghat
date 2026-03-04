@@ -10,8 +10,8 @@ pub use project::TestProject;
 
 /// Snapshot macro that auto-includes the test function name.
 ///
-/// - `snapshot!(expr)` — unnamed, delegates to `insta::assert_snapshot!`
-/// - `snapshot!("suffix", expr)` — named as `"{function_name}-{suffix}"`
+/// - `snapshot!(expr)` - unnamed, delegates to `insta::assert_snapshot!`
+/// - `snapshot!("suffix", expr)` - named as `"{function_name}-{suffix}"`
 #[macro_export]
 macro_rules! snapshot {
     ($expr:expr) => {

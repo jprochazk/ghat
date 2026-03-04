@@ -66,17 +66,12 @@ impl MockGitHubServer {
                 let (status_code, body) = if let Some((code, body)) = routes.get(&path) {
                     (*code, body.clone())
                 } else {
-                    (
-                        404,
-                        format!(r#"{{"message":"Not Found","path":"{path}"}}"#),
-                    )
+                    (404, format!(r#"{{"message":"Not Found","path":"{path}"}}"#))
                 };
 
-                let header = tiny_http::Header::from_bytes(
-                    &b"Content-Type"[..],
-                    &b"application/json"[..],
-                )
-                .unwrap();
+                let header =
+                    tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
+                        .unwrap();
 
                 let response = tiny_http::Response::from_string(body)
                     .with_status_code(status_code)
@@ -161,7 +156,7 @@ fn build_routes(actions: &[MockAction]) -> HashMap<String, (u16, String)> {
 
 // Pre-built mock actions matching the test data in src/github.rs::testing
 
-/// actions/checkout — lightweight tags (object type "commit")
+/// actions/checkout - lightweight tags (object type "commit")
 pub fn mock_checkout() -> MockAction {
     let mut refs = HashMap::new();
     refs.insert(
@@ -243,7 +238,7 @@ outputs:
     }
 }
 
-/// Swatinem/rust-cache — annotated tags (object type "tag", needs dereferencing)
+/// Swatinem/rust-cache - annotated tags (object type "tag", needs dereferencing)
 pub fn mock_rust_cache() -> MockAction {
     let mut refs = HashMap::new();
     let mut tags = HashMap::new();
@@ -334,7 +329,7 @@ outputs:
     }
 }
 
-/// dtolnay/rust-toolchain — uses branch refs (e.g. "stable", "nightly")
+/// dtolnay/rust-toolchain - uses branch refs (e.g. "stable", "nightly")
 pub fn mock_rust_toolchain() -> MockAction {
     let mut branch_refs = HashMap::new();
     branch_refs.insert(

@@ -25,7 +25,7 @@ pub enum UpdateResult {
 fn major_constraint(version: &str) -> Option<String> {
     let stripped = version.strip_prefix('v').unwrap_or(version);
     // Must have at least one dot to be semver-like (e.g. "2.7.8" or "2.7").
-    // A bare major like "1" (from tag "v1") is not semver — those repos use
+    // A bare major like "1" (from tag "v1") is not semver - those repos use
     // rolling tags and have no releases to match against.
     if !stripped.contains('.') {
         return None;
@@ -67,7 +67,7 @@ fn resolve_update(
         return resolve_compatible(api, owner, repo, &req);
     }
 
-    // Non-semver tag (e.g. "v1" rolling tag) — re-resolve the same tag
+    // Non-semver tag (e.g. "v1" rolling tag) - re-resolve the same tag
     resolve_tag(api, owner, repo, &current.version)
 }
 

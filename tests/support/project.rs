@@ -281,16 +281,16 @@ impl CommandRunner {
         // Collect all path representations that might appear in the output.
         // Tools like tsgo or canonicalize() can resolve symlinks or short names,
         // producing paths that differ from what tempdir() returns.
+        // Only forward-slash forms are needed since sanitize_output normalizes
+        // all backslashes before doing replacements.
         let mut dir_variants: Vec<String> = Vec::new();
         if let Ok(canonical) = self.project_dir.canonicalize() {
             let s = canonical.to_string_lossy().to_string();
-            // On Windows, canonicalize adds a \\?\ prefix — strip it.
+            // On Windows, canonicalize adds a \\?\ prefix - strip it.
             let s = s.strip_prefix(r"\\?\").unwrap_or(&s).to_string();
             dir_variants.push(s.replace('\\', "/"));
-            dir_variants.push(s);
         }
-        let s = self.project_dir.to_string_lossy().to_string();
-        dir_variants.push(s.replace('\\', "/"));
+        let s = self.project_dir.to_string_lossy().replace('\\', "/");
         dir_variants.push(s);
         dir_variants.dedup();
 
@@ -313,12 +313,13 @@ fn normalize_path(p: &str) -> String {
 /// Replace temp directory paths and unstable timing values in command output.
 fn sanitize_output(raw: &[u8], dir_variants: &[String]) -> String {
     let mut s = String::from_utf8_lossy(raw).into_owned();
+    // Normalize all backslashes to forward slashes before doing replacements.
+    // On Windows, the binary outputs paths with backslashes (e.g. `.github/workflows\ci.yaml`).
+    s = s.replace('\\', "/");
     // Replace all known path variants (longest first to avoid partial matches).
     for variant in dir_variants {
         s = s.replace(variant.as_str(), "[ROOT]");
     }
-    // Normalize any remaining backslash separators after [ROOT] (Windows).
-    let s = s.replace("[ROOT]\\", "[ROOT]/");
     // Redact durations like "in 42.02ms", "in 1.23s", "in 350.00µs"
     let mut result = String::with_capacity(s.len());
     let mut rest = s.as_str();

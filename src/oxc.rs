@@ -120,10 +120,10 @@ pub fn strip_type_annotations<'a>(
         .build_with_scoping(scopes, &mut program);
 
     // Strip phantom `export {};` injected by oxc when all imports were type-only.
-    // Only removes empty named exports — real exports are preserved.
+    // Only removes empty named exports - real exports are preserved.
     program.body.retain(|stmt| {
         if let oxc_ast::ast::Statement::ExportNamedDeclaration(decl) = stmt {
-            // Remove only empty `export {};` — keep real exports
+            // Remove only empty `export {};` - keep real exports
             !(decl.specifiers.is_empty() && decl.declaration.is_none() && decl.source.is_none())
         } else {
             true
