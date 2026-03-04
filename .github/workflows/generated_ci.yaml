@@ -30,10 +30,12 @@ jobs:
       with:
         go-version: '1.26'
     - id: step_2
-      uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5
-    - id: step_3
       uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9
       with:
         toolchain: ${{ matrix.toolchain }}
+    - id: step_3
+      uses: Swatinem/rust-cache@779680da715d629ac1d338a641029a2f4372abb5
+      with:
+        cache-on-failure: 'true'
     - id: step_4
       run: cargo test
