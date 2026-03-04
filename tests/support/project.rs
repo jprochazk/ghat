@@ -177,7 +177,7 @@ fn collect_recursive(root: &Path, dir: &Path, files: &mut BTreeMap<String, Strin
 /// Panics on other I/O errors (e.g. permission denied, file not found).
 fn read_file_or_binary(path: &Path) -> String {
     match std::fs::read_to_string(path) {
-        Ok(content) => content,
+        Ok(content) => content.replace("\r\n", "\n"),
         Err(e) if e.kind() == std::io::ErrorKind::InvalidData => "[binary]".to_string(),
         Err(e) => panic!("failed to read {}: {e}", path.display()),
     }
