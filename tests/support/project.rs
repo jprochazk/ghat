@@ -283,9 +283,24 @@ impl CommandRunner {
 
         let output = cmd.output().expect("failed to run ghat");
 
-        let dir_str = self.project_dir.to_str().unwrap();
-        let stdout = sanitize_output(&output.stdout, dir_str);
-        let stderr = sanitize_output(&output.stderr, dir_str);
+        // Collect all path representations that might appear in the output.
+        // Tools like tsgo or canonicalize() can resolve symlinks or short names,
+        // producing paths that differ from what tempdir() returns.
+        let mut dir_variants: Vec<String> = Vec::new();
+        if let Ok(canonical) = self.project_dir.canonicalize() {
+            let s = canonical.to_string_lossy().to_string();
+            // On Windows, canonicalize adds a \\?\ prefix — strip it.
+            let s = s.strip_prefix(r"\\?\").unwrap_or(&s).to_string();
+            dir_variants.push(s.replace('\\', "/"));
+            dir_variants.push(s);
+        }
+        let s = self.project_dir.to_string_lossy().to_string();
+        dir_variants.push(s.replace('\\', "/"));
+        dir_variants.push(s);
+        dir_variants.dedup();
+
+        let stdout = sanitize_output(&output.stdout, &dir_variants);
+        let stderr = sanitize_output(&output.stderr, &dir_variants);
 
         CommandOutput {
             exit_code: output.status.code().unwrap_or(-1),
@@ -301,17 +316,13 @@ fn normalize_path(p: &str) -> String {
 }
 
 /// Replace temp directory paths and unstable timing values in command output.
-fn sanitize_output(raw: &[u8], dir_str: &str) -> String {
-    let s = String::from_utf8_lossy(raw);
-    // On macOS, /var is a symlink to /private/var, so the binary may emit
-    // canonicalized paths that include the /private prefix.
-    let s = if cfg!(target_os = "macos") {
-        s.replace(&format!("/private{dir_str}"), "[ROOT]")
-            .replace(dir_str, "[ROOT]")
-    } else {
-        s.replace(dir_str, "[ROOT]")
-    };
-    // Normalize backslash paths to forward slashes (Windows).
+fn sanitize_output(raw: &[u8], dir_variants: &[String]) -> String {
+    let mut s = String::from_utf8_lossy(raw).into_owned();
+    // Replace all known path variants (longest first to avoid partial matches).
+    for variant in dir_variants {
+        s = s.replace(variant.as_str(), "[ROOT]");
+    }
+    // Normalize any remaining backslash separators after [ROOT] (Windows).
     let s = s.replace("[ROOT]\\", "[ROOT]/");
     // Redact durations like "in 42.02ms", "in 1.23s", "in 350.00µs"
     let mut result = String::with_capacity(s.len());
