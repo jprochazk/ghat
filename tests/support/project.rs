@@ -166,12 +166,7 @@ fn collect_recursive(root: &Path, dir: &Path, files: &mut BTreeMap<String, Strin
         if path.is_dir() {
             collect_recursive(root, &path, files);
         } else {
-            let rel = normalize_path(
-                &path
-                    .strip_prefix(root)
-                    .unwrap()
-                    .to_string_lossy(),
-            );
+            let rel = normalize_path(&path.strip_prefix(root).unwrap().to_string_lossy());
             let content = read_file_or_binary(&path);
             files.insert(rel, content);
         }
