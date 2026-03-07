@@ -589,6 +589,126 @@ foo()
 }
 
 #[test]
+fn workflow_call_trigger() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/build.ts",
+            r#"const build = workflow("Build", {
+  on: triggers({
+    workflow_call: {
+      inputs: {
+        save_cache: input("boolean", { default: true }),
+      },
+      outputs: {
+        artifact: { description: "Build artifact path" },
+      },
+      secrets: {
+        deploy_token: { description: "Token for deployment", required: true },
+        optional_key: { description: "Optional API key" },
+      },
+    },
+  }),
+  jobs(ctx) {
+    const b = ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        run(`echo save_cache=${ctx.inputs.save_cache}`)
+        return { artifact: "build.tar.gz" }
+      }
+    })
+    return { artifact: b.outputs.artifact }
+  }
+})
+
+workflow("CI", {
+  on: triggers({ pull_request: {} }),
+  jobs(ctx) {
+    const b = ctx.uses("Build That Thing", build, {
+      with: { save_cache: false },
+      secrets: "inherit",
+    })
+
+    ctx.job("Deploy", {
+      runs_on: "ubuntu-latest",
+      needs: [b],
+      steps(ctx) {
+        run(`echo deploying ${ctx.needs.build_that_thing.outputs.artifact}`)
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!("output", output);
+    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+}
+
+#[test]
+fn step_output_through_workflow_call() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/ghat.lock",
+            "actions/checkout tag:v4.2.2 11bd71901bbe5b1630ceea73d27597364c9af683\n",
+        )
+        .file(
+            ".github/ghat/workflows/build.ts",
+            r#"const build = workflow("Build", {
+  on: triggers({
+    workflow_call: {
+      inputs: {
+        save_cache: input("boolean", {
+          required: false,
+          default: false,
+        }),
+      },
+      outputs: {
+        artifact_path: { description: "Path to the built artifact" },
+      },
+    },
+  }),
+  jobs(ctx) {
+    const build = ctx.job("Compile", {
+      runs_on: "ubuntu-latest",
+      steps(ctx) {
+        const build = run(`cargo build --release --cache ${ctx.inputs.save_cache}`)
+        return { artifact_path: build.outputs.path }
+      }
+    })
+    return { artifact_path: build.outputs.artifact_path }
+  }
+})
+
+workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    const b = ctx.uses("Run Build", build, {
+      with: { save_cache: true }
+    })
+
+    ctx.job("Deploy", {
+      runs_on: "ubuntu-latest",
+      needs: [b],
+      steps(ctx) {
+        run(`echo deploying ${ctx.needs.run_build.outputs.artifact_path}`)
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!("output", output);
+    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+}
+
+#[test]
 fn context_proxy_direct_return() {
     let p = TestProject::new()
         .init()

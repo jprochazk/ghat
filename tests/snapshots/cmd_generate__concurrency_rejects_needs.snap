@@ -13,6 +13,6 @@ Error:
   |     at get (eval_script:43:96)
   |     at concurrency (.github/ghat/workflows/bad.ts:3:1)
   |     at resolve_value (eval_script:63:41)
-  |     at workflow (eval_script:407:51)
+  |     at workflow (eval_script:446:51)
   |     at <anonymous> (.github/ghat/workflows/bad.ts:2:7)
   |

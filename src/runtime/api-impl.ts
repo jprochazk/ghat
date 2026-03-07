@@ -100,7 +100,50 @@ declare global {
     if (on.issue_comment != null) out.issue_comment = on.issue_comment;
     if (on.schedule != null) out.schedule = on.schedule;
     if (on.workflow_dispatch != null) out.workflow_dispatch = map_workflow_dispatch(on.workflow_dispatch);
+    if (on.workflow_call != null) out.workflow_call = map_workflow_call(on.workflow_call);
     return out;
+  }
+
+  function map_workflow_call(wc: {
+    inputs?: Record<string, any>;
+    outputs?: Record<string, { description?: string }>;
+    secrets?: Record<string, { description?: string; required?: boolean }>;
+  }): Output.WorkflowCall {
+    const result: Output.WorkflowCall = {};
+    if (wc.inputs) {
+      const inputs: Record<string, Output.DispatchInput> = {};
+      for (const key of Object.keys(wc.inputs)) {
+        const inp: BaseInput<boolean> & { type?: string; default?: any } = wc.inputs[key];
+        const out: Output.DispatchInput = {};
+        if (inp.description != null) out.description = inp.description;
+        if (inp.type != null) out.type = inp.type;
+        if (inp.required != null) out.required = inp.required;
+        if (inp.default != null) out.default = String(inp.default);
+        inputs[key] = out;
+      }
+      result.inputs = inputs;
+    }
+    if (wc.outputs) {
+      const outputs: Record<string, Output.WorkflowCallOutput> = {};
+      for (const [key, val] of Object.entries(wc.outputs)) {
+        const out: Output.WorkflowCallOutput = {};
+        if (val.description != null) out.description = val.description;
+        // value is filled in later from the jobs() return
+        outputs[key] = out;
+      }
+      result.outputs = outputs;
+    }
+    if (wc.secrets) {
+      const secrets: Record<string, Output.WorkflowCallSecret> = {};
+      for (const [key, val] of Object.entries(wc.secrets)) {
+        const out: Output.WorkflowCallSecret = {};
+        if (val.description != null) out.description = val.description;
+        if (val.required != null) out.required = val.required;
+        secrets[key] = out;
+      }
+      result.secrets = secrets;
+    }
+    return result;
   }
 
   function map_workflow_dispatch(wd: { inputs?: Record<string, any> }): Output.WorkflowDispatch {
@@ -383,13 +426,14 @@ declare global {
 
     jobs[id] = out_job;
 
-    return { id, outputs: out_job.outputs ?? {} };
+    return { id, outputs: context_proxy(`jobs.${id}.outputs`) };
   }
 
   // == workflow =====================================================
 
-  function workflow(name: string, definition: Workflow<any>): void {
+  function workflow(name: string, definition: Workflow<any>): any {
     const on = map_triggers(definition.on);
+    const id = normalize_id(name);
 
     const wf: Output.Workflow = {
       name: name,
@@ -425,10 +469,46 @@ declare global {
     (jobs_ctx as any).job = function(job_name: string, job_def: Job<any, any, any, any>): JobRefInternal {
       return map_job(job_name, job_def, wf.jobs);
     };
+    (jobs_ctx as any).uses = function(
+      job_name: string,
+      workflow_ref: { __workflow_ref: true; __path: string },
+      options?: { needs?: JobRefInternal[]; with?: Record<string, unknown>; secrets?: unknown; if?: any },
+    ): JobRefInternal {
+      const job_id = normalize_id(job_name);
+      const needs_refs: JobRefInternal[] = options?.needs ?? [];
+      const needs_ids = needs_refs.map((r) => r.id);
 
-    definition.jobs(jobs_ctx);
+      const out_job: Output.Job = {};
+      out_job.name = job_name;
+      out_job.uses = workflow_ref.__path;
+      if (needs_ids.length > 0) out_job.needs = needs_ids;
+      if (options?.if != null) {
+        const if_ctx = build_context(["github", "needs", "vars", "inputs"], `${job_name} > if`);
+        if_ctx.needs = build_needs_proxy(needs_refs);
+        out_job.if = resolve_value(options.if, if_ctx);
+      }
+      if (options?.with != null) out_job.with = options.with;
+      if (options?.secrets != null) out_job.secrets = options.secrets;
+
+      wf.jobs[job_id] = out_job;
+      return { id: job_id, outputs: context_proxy(`jobs.${job_id}.outputs`) };
+    };
+
+    const jobs_return = definition.jobs(jobs_ctx);
+
+    // Fill in workflow_call output values from the jobs() return
+    if (wf.on.workflow_call?.outputs && jobs_return != null && typeof jobs_return === "object") {
+      for (const [key, value] of Object.entries(jobs_return as Record<string, unknown>)) {
+        if (key in wf.on.workflow_call.outputs) {
+          wf.on.workflow_call.outputs[key].value = String(value);
+        }
+      }
+    }
 
     define_workflow(name, coerce(wf));
+
+    // Return a workflow ref for reusable workflow calls
+    return { __workflow_ref: true, __path: `./.github/workflows/generated_${id}.yaml` };
   }
 
   globalThis.workflow = workflow;

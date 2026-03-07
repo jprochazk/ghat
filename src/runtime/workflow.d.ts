@@ -18,6 +18,7 @@ export interface Triggers {
   issue_comment?: IssueComment;
   schedule?: Schedule[];
   workflow_dispatch?: WorkflowDispatch;
+  workflow_call?: WorkflowCall;
   repository_dispatch?: RepositoryDispatch;
 }
 
@@ -52,6 +53,22 @@ export interface DispatchInput {
   required?: boolean;
   default?: string;
   options?: string[];
+}
+
+export interface WorkflowCall {
+  inputs?: Record<string, DispatchInput>;
+  outputs?: Record<string, WorkflowCallOutput>;
+  secrets?: Record<string, WorkflowCallSecret>;
+}
+
+export interface WorkflowCallOutput {
+  description?: string;
+  value?: string;
+}
+
+export interface WorkflowCallSecret {
+  description?: string;
+  required?: boolean;
 }
 
 export interface RepositoryDispatch {

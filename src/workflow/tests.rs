@@ -890,6 +890,95 @@ jobs:
 }
 
 #[test]
+fn roundtrip_workflow_call_trigger() {
+    roundtrip(
+        r#"
+name: Reusable Build
+
+on:
+  workflow_call:
+    inputs:
+      save_cache:
+        description: Whether to save cache
+        type: boolean
+        required: false
+        default: "true"
+      environment:
+        description: Target environment
+        type: string
+        required: true
+    outputs:
+      artifact_url:
+        description: URL of the build artifact
+        value: ${{ jobs.build.outputs.url }}
+    secrets:
+      deploy_token:
+        description: Token for deployment
+        required: true
+      optional_key:
+        description: Optional API key
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      url: ${{ steps.upload.outputs.url }}
+    steps:
+      - id: upload
+        run: echo building
+"#,
+    );
+}
+
+#[test]
+fn parse_workflow_call_with_outputs_and_secrets() {
+    let yaml = r#"
+name: Reusable
+on:
+  workflow_call:
+    inputs:
+      name:
+        type: string
+        required: true
+    outputs:
+      result:
+        description: The result
+        value: ${{ jobs.work.outputs.out }}
+    secrets:
+      token:
+        required: true
+jobs:
+  work:
+    runs-on: ubuntu-latest
+    outputs:
+      out: ${{ steps.s.outputs.val }}
+    steps:
+      - id: s
+        run: echo done
+"#;
+    let wf: Workflow = serde_yaml_ng::from_str(yaml).unwrap();
+    let wc = wf.on.workflow_call.as_ref().unwrap();
+    assert_eq!(wc.inputs.len(), 1);
+    assert_eq!(wc.inputs["name"].required, Some(true));
+    assert_eq!(wc.outputs.len(), 1);
+    assert_eq!(wc.outputs["result"].description.as_deref(), Some("The result"));
+    assert_eq!(
+        wc.outputs["result"].value.as_deref(),
+        Some("${{ jobs.work.outputs.out }}")
+    );
+    assert_eq!(wc.secrets.len(), 1);
+    assert_eq!(wc.secrets["token"].required, Some(true));
+}
+
+#[test]
+fn parse_workflow_call_null() {
+    let yaml = "workflow_call:\n";
+    let t: Triggers = serde_yaml_ng::from_str(yaml).unwrap();
+    assert!(t.workflow_call.is_some());
+    assert!(t.workflow_call.unwrap().inputs.is_empty());
+}
+
+#[test]
 fn roundtrip_issue_comment_trigger() {
     roundtrip(
         r#"

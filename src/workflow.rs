@@ -83,6 +83,13 @@ pub struct Triggers {
         deserialize_with = "nullable_trigger",
         skip_serializing_if = "Option::is_none"
     )]
+    pub workflow_call: Option<WorkflowCall>,
+
+    #[serde(
+        default,
+        deserialize_with = "nullable_trigger",
+        skip_serializing_if = "Option::is_none"
+    )]
     pub repository_dispatch: Option<RepositoryDispatch>,
 }
 
@@ -159,6 +166,36 @@ pub struct DispatchInput {
 
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub options: Vec<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WorkflowCall {
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    pub inputs: IndexMap<String, DispatchInput>,
+
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    pub outputs: IndexMap<String, WorkflowCallOutput>,
+
+    #[serde(default, skip_serializing_if = "IndexMap::is_empty")]
+    pub secrets: IndexMap<String, WorkflowCallSecret>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WorkflowCallOutput {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub value: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct WorkflowCallSecret {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub required: Option<bool>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]

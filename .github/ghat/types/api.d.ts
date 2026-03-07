@@ -536,6 +536,7 @@ declare global {
     issue_comment: IssueCommentEventPayload,
     schedule: ScheduleEventPayload,
     workflow_dispatch: WorkflowDispatchEventPayload,
+    workflow_call: {},
   }
 
   // ---- GitHub Context ----
@@ -883,23 +884,30 @@ declare global {
   type MatrixType<T> = { [K in MatrixTypeKeys<T>]: MatrixValueForKey<T, K> };
 
 
+  /** Extract the inputs record from either workflow_dispatch or workflow_call triggers. */
+  type ExtractInputs<Triggers> =
+    Triggers extends { workflow_dispatch: { inputs: infer I } } ? I :
+    Triggers extends { workflow_call: { inputs: infer I } } ? I :
+    never;
+
+  /** Map an inputs record to the typed inputs context. */
+  type MapInputs<Inputs> = {
+    [K in keyof Inputs as Inputs[K] extends BaseInput<true> ? K : never]-?:
+    Inputs[K] extends ChoiceInput<infer O, true> ? Required<O[number]> :
+    Inputs[K] extends StringInput<true> ? string :
+    Inputs[K] extends NumberInput<true> ? string :
+    Inputs[K] extends BooleanInput<true> ? "true" | "false" : never;
+  } & {
+    [K in keyof Inputs as Inputs[K] extends BaseInput<false> ? K : never]?:
+    Inputs[K] extends ChoiceInput<infer O, false> ? O[number] :
+    Inputs[K] extends StringInput<false> ? string :
+    Inputs[K] extends NumberInput<false> ? string :
+    Inputs[K] extends BooleanInput<false> ? "true" | "false" : never;
+  };
+
   interface InputsContext<Triggers> {
     /** The inputs provided to the workflow. */
-    inputs: Triggers extends { workflow_dispatch: { inputs: infer Inputs } }
-    ? ({
-      [K in keyof Inputs as Inputs[K] extends BaseInput<true> ? K : never]-?:
-      Inputs[K] extends ChoiceInput<infer O, true> ? Required<O[number]> :
-      Inputs[K] extends StringInput<true> ? string :
-      Inputs[K] extends NumberInput<true> ? string :
-      Inputs[K] extends BooleanInput<true> ? "true" | "false" : never;
-    } & {
-      [K in keyof Inputs as Inputs[K] extends BaseInput<false> ? K : never]?:
-      Inputs[K] extends ChoiceInput<infer O, false> ? O[number] :
-      Inputs[K] extends StringInput<false> ? string :
-      Inputs[K] extends NumberInput<false> ? string :
-      Inputs[K] extends BooleanInput<false> ? "true" | "false" : never;
-    })
-    : {}
+    inputs: ExtractInputs<Triggers> extends never ? {} : MapInputs<ExtractInputs<Triggers>>;
   }
 
   type ValueOrFactory<Result, Context> =
@@ -918,6 +926,12 @@ declare global {
     ? `_${NormalizeId<Rest>}`
     : `${Lowercase<C> extends Allowed ? Lowercase<C> : ""}${NormalizeId<Rest>}`
     : "";
+
+  /** Return type of `jobs()`: void normally, required output map when `workflow_call.outputs` is declared. */
+  type WorkflowJobsReturn<Triggers> =
+    Triggers extends { workflow_call: { outputs: infer O } }
+    ? keyof O extends never ? void : { [K in Extract<keyof O, string>]: string }
+    : void;
 
   type WorkflowRunNameContext<Triggers> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
   type WorkflowConcurrencyContext<Triggers> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
@@ -942,7 +956,7 @@ declare global {
     /** Permissions for the generated GitHub token. */
     permissions?: "write-all" | "read-all" | ScopedPermissions;
 
-    jobs(ctx: WorkflowJobsContext<Triggers>): void;
+    jobs(ctx: WorkflowJobsContext<Triggers>): WorkflowJobsReturn<Triggers>;
   }
 
   interface ScopedPermissions {
@@ -1025,7 +1039,7 @@ declare global {
     default?: O[number];
   };
 
-  interface Trigger<Inputs> {
+  interface Trigger<Inputs = {}> {
     push?: string[] | FilteredTrigger;
     pull_request?: string[] | Omit<FilteredTrigger, "tags">;
     pull_request_target?: string[] | Omit<FilteredTrigger, "tags">;
@@ -1040,6 +1054,14 @@ declare global {
       /** Workflow inputs. Maximum number of inputs is 25. */
       inputs?: Inputs;
     };
+    workflow_call?: {
+      /** Inputs that the called workflow receives. */
+      inputs?: Inputs;
+      /** Outputs that the reusable workflow makes available to the caller. Values are derived from the `jobs()` return. */
+      outputs?: Record<string, { description?: string }>;
+      /** Secrets that the caller must or may pass. */
+      secrets?: Record<string, { description?: string; required?: boolean }>;
+    };
   }
 
   interface JobStrategy<Matrix> {
@@ -1051,7 +1073,7 @@ declare global {
   // TODO: typed expressions
   type Expression = string;
 
-  interface StepRef<Outputs = {}> {
+  interface StepRef<Outputs> {
     outputs: Outputs;
   }
 
@@ -1076,10 +1098,36 @@ declare global {
     & VarsContext
     & SecretsContext;
 
-  // NOTE: jobs which only trigger reusable workflows are not supported.
-  //       workflow reuse is done through normal software engineering within workflow definitions,
-  //       like writing reusable functions.
-  //       the generated workflow files are much more verbose as a result, but much less annoying to author.
+  /** Extract the output keys from a `workflow_call` trigger as `{ key: string }`. */
+  type ExtractOutputs<Triggers> =
+    Triggers extends { workflow_call: { outputs: infer O } }
+    ? { [K in Extract<keyof O, string>]: string }
+    : {};
+
+  type ExtractRequiredInputs<Triggers> =
+    Triggers extends { workflow_call: { inputs: infer Inputs } }
+    ? { [K in keyof Inputs as Inputs[K] extends BaseInput<true> ? K : never]: any }
+    : {};
+
+  /** A reference to a workflow that has `workflow_call` trigger, usable with `ctx.uses()`. */
+  interface WorkflowRef<Triggers> {
+    /** @internal */ readonly __brand: unique symbol;
+  }
+
+  /** Extract the `with` type for calling a reusable workflow. */
+  type WorkflowCallWith<Inputs> = {
+    [K in keyof Inputs as Inputs[K] extends BaseInput<true> ? K : never]-?:
+    Inputs[K] extends BooleanInput<any> ? boolean :
+    Inputs[K] extends NumberInput<any> ? number :
+    Inputs[K] extends StringInput<any> ? string :
+    Inputs[K] extends ChoiceInput<infer O, any> ? O[number] : unknown;
+  } & {
+    [K in keyof Inputs as Inputs[K] extends BaseInput<false> ? K : never]?:
+    Inputs[K] extends BooleanInput<any> ? boolean :
+    Inputs[K] extends NumberInput<any> ? number :
+    Inputs[K] extends StringInput<any> ? string :
+    Inputs[K] extends ChoiceInput<infer O, any> ? O[number] : unknown;
+  };
 
   interface Job<
     Triggers, // propagates workflow.workflow_dispatch.inputs
@@ -1099,6 +1147,7 @@ declare global {
 
   interface JobRef<Id extends string, Outputs> {
     id: Id;
+    outputs: { [K in Extract<keyof Outputs, string>]: string };
   }
 
   /** Maps a tuple of JobRefs into a `{ needs: { <id>: { outputs: <Outputs> } } }` context. */
@@ -1128,6 +1177,13 @@ declare global {
 
   function matrix<const T extends MatrixInput>(def: T): MatrixType<T>;
 
+  interface WorkflowCallJobOptions<Triggers, UsesTriggers, Needs> {
+    needs?: Needs;
+    if?: ValueOrFactory<Expression, JobIfContext<Triggers, Needs>>;
+    with?: WorkflowCallWith<ExtractInputs<UsesTriggers>>;
+    secrets?: Record<string, string> | "inherit";
+  }
+
   interface WorkflowJobsContext<Triggers> extends GitHubContext<Triggers>, InputsContext<Triggers>, VarsContext {
     // returns a `JobRef`, which can be used as the input to `needs` in other jobs, allowing them to use its outputs.
     job<
@@ -1136,12 +1192,25 @@ declare global {
       const Outputs,
       const Matrix,
     >(name: Name, job: Job<Triggers, Needs, Outputs, Matrix>): JobRef<NormalizeId<Name>, Outputs>;
+
+    /** Call a reusable workflow as a job. */
+    uses<
+      const Name extends string,
+      const Needs extends JobRef<string, unknown>[],
+      const UsesTriggers,
+    >(
+      name: Name,
+      ref: WorkflowRef<UsesTriggers>,
+      ...options: (keyof ExtractRequiredInputs<UsesTriggers>) extends never
+        ? [WorkflowCallJobOptions<Triggers, UsesTriggers, Needs>?]
+        : [WorkflowCallJobOptions<Triggers, UsesTriggers, Needs>],
+    ): JobRef<NormalizeId<Name>, ExtractOutputs<UsesTriggers>>;
   }
 
   function workflow<const Triggers>(
     name: string,
     definition: Workflow<Triggers>,
-  ): void;
+  ): WorkflowRef<Triggers>;
 
   // ---- Step builtins ----
 
@@ -1158,7 +1227,8 @@ declare global {
     working_directory?: string;
   }
 
-  function run(script: string, options?: RunOptions): StepRef;
+  // We can't return typed outputs from `run`, so return a generic record.
+  function run(script: string, options?: RunOptions): StepRef<Record<string, string>>;
 
   // ---- Step options ----
 

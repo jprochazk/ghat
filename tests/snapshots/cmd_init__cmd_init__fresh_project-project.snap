@@ -10,6 +10,6 @@ types/** linguist-generated
 --- .github/ghat/tsconfig.json ---
 [324 bytes]
 --- .github/ghat/types/api.d.ts ---
-[37979 bytes]
+[41074 bytes]
 --- .github/workflows/ghat_check.yaml ---
-[315 bytes]
+[326 bytes]

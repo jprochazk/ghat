@@ -33,10 +33,12 @@ workflow("CI", {
         uses("dtolnay/rust-toolchain", {
           with: { toolchain: ctx.matrix.toolchain }
         })
-        uses("Swatinem/rust-cache", {
+        const cache_result = uses("Swatinem/rust-cache", {
           with: { cache_on_failure: "true" }
         })
         run("cargo test")
+
+        return { cache_hit: cache_result.outputs.cache_hit }
       }
     })
   }

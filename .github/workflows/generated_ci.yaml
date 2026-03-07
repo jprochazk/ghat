@@ -23,6 +23,8 @@ jobs:
         - runner: windows-2025
           toolchain: stable-x86_64-pc-windows-gnu
       fail-fast: false
+    outputs:
+      cache_hit: ${{ steps.step_3.outputs.cache-hit }}
     steps:
     - id: step_0
       uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
