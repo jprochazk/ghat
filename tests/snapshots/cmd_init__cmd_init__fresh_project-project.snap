@@ -2,11 +2,14 @@
 source: tests/cmd_init.rs
 expression: value
 ---
+--- .github/ghat/.gitattributes ---
+actions/** linguist-generated
+types/** linguist-generated
 --- .github/ghat/ghat.lock ---
 
 --- .github/ghat/tsconfig.json ---
 [324 bytes]
 --- .github/ghat/types/api.d.ts ---
-[37931 bytes]
+[37979 bytes]
 --- .github/workflows/ghat_check.yaml ---
-[268 bytes]
+[315 bytes]
