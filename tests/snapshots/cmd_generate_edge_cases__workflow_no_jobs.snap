@@ -1,0 +1,11 @@
+---
+source: tests/cmd_generate_edge_cases.rs
+expression: output
+---
+exit_code: 0
+---stderr---
+    Checking workflow definitions
+  Evaluating workflow definitions
+       Wrote .github/workflows/generated_empty.yaml
+       Wrote .github/workflows/ghat_check.yaml
+    Finished generated 2 workflows in [TIME]

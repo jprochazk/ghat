@@ -61,13 +61,14 @@ pub fn eval_workflow_definitions() -> miette::Result<Vec<(String, Workflow)>> {
 
     let rt = builder.build()?;
 
-    let entries = std::fs::read_dir(&workflows_dir)
+    let mut entries: Vec<_> = std::fs::read_dir(&workflows_dir)
         .into_diagnostic()
-        .wrap_err("failed to load directory")?;
+        .wrap_err("failed to load directory")?
+        .collect::<Result<_, _>>()
+        .into_diagnostic()
+        .wrap_err("failed to load workflow file")?;
+    entries.sort_by_key(|e| e.file_name());
     for entry in entries {
-        let entry = entry
-            .into_diagnostic()
-            .wrap_err("failed to load workflow file")?;
         let file_name = entry.file_name().to_string_lossy().to_string();
 
         if file_name.starts_with('_') {

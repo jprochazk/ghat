@@ -1,0 +1,19 @@
+---
+source: tests/cmd_generate_edge_cases.rs
+expression: value
+---
+--- a/.github/workflows/generated_ci.yaml
++++ b/.github/workflows/generated_ci.yaml
+@@ -4,10 +4,11 @@
+   push:
+     branches:
+     - main
++    - develop
+ jobs:
+   build:
+     name: Build
+     runs-on: ubuntu-latest
+     steps:
+     - id: step_0
+-      run: cargo build
++      run: cargo build --release

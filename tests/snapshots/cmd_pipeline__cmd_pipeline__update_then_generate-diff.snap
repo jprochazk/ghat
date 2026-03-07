@@ -1,0 +1,14 @@
+---
+source: tests/cmd_pipeline.rs
+expression: value
+---
+--- a/.github/workflows/generated_ci.yaml
++++ b/.github/workflows/generated_ci.yaml
+@@ -10,6 +10,6 @@
+     runs-on: ubuntu-latest
+     steps:
+     - id: step_0
+-      uses: actions/checkout@8ade135a41bc03ea155e62e844d188df1ea18608
++      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+     - id: step_1
+       run: cargo build

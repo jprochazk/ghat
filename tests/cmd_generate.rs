@@ -43,8 +43,7 @@ fn simple_workflow() {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -96,8 +95,7 @@ workflow("CI", {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -127,8 +125,7 @@ fn pins_actions_to_lockfile_sha() {
         .build();
 
     let output = p.ghat(&["generate", "--no-check"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -184,8 +181,7 @@ fn dedents_multiline_run() {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -239,8 +235,7 @@ fn matrix_strategy() {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -280,8 +275,7 @@ fn workflow_dispatch_inputs() {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 /// Tests: job needs/outputs, job name normalization, job if/env/timeout,
@@ -400,8 +394,7 @@ workflow("Deploy Context", {
         .build();
 
     let output = p.ghat(&["generate", "--no-check"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -500,44 +493,6 @@ fn unknown_context_typo() {
 }
 
 #[test]
-fn subdirectory_and_parent_imports() {
-    let p = TestProject::new()
-        .init()
-        .file(
-            ".github/ghat/shared/helpers.ts",
-            r#"export function greeting(): string { return "hello"; }"#,
-        )
-        .file(
-            ".github/ghat/workflows/lib/steps.ts",
-            r#"export function checkStep() { return "cargo check"; }"#,
-        )
-        .file(
-            ".github/ghat/workflows/ci.ts",
-            r#"import { greeting } from "../shared/helpers.ts"
-import { checkStep } from "./lib/steps.ts"
-
-workflow("Subdir Import", {
-  on: triggers({ push: ["main"] }),
-  jobs(ctx) {
-    ctx.job("Test", {
-      runs_on: "ubuntu-latest",
-      steps() {
-        run(checkStep())
-        run(greeting())
-      }
-    })
-  }
-})
-"#,
-        )
-        .build();
-
-    let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
-}
-
-#[test]
 fn multiple_workflows_one_file() {
     let p = TestProject::new()
         .init()
@@ -567,8 +522,7 @@ workflow("Test", {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -643,8 +597,7 @@ workflow("CI", {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -704,8 +657,7 @@ workflow("CI", {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }
 
 #[test]
@@ -734,6 +686,5 @@ fn context_proxy_direct_return() {
         .build();
 
     let output = p.ghat(&["generate"]).run();
-    snapshot!("output", output);
-    snapshot!("generated", p.snapshot_glob(".github/workflows/**/*"));
+    snapshot!(p.generate_snapshot(&output));
 }

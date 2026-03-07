@@ -1,0 +1,10 @@
+---
+source: tests/cmd_generate_edge_cases.rs
+expression: output
+---
+exit_code: 1
+---stderr---
+    Checking workflow definitions
+Error: 
+  x invalid lockfile entry on line 1: expected `owner/repo tag:version sha`,
+  | got: this is not a valid lockfile format

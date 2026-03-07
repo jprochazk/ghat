@@ -124,6 +124,43 @@ impl TestProject {
         }
     }
 
+    /// Snapshot a generate run: command output, workflow input `.ts` files
+    /// (`.github/ghat/workflows/**/*.ts`), and generated outputs
+    /// (`.github/workflows/**/*`) combined into a single string.
+    pub fn generate_snapshot(&self, output: &CommandOutput) -> String {
+        let mut result = output.to_string();
+        let files = self.snapshot_globs(&[
+            ".github/ghat/workflows/**/*.ts",
+            ".github/workflows/**/*",
+        ]);
+        result.push_str(&files.to_string());
+        result
+    }
+
+    /// Snapshot files matching multiple glob patterns (relative to project root).
+    pub fn snapshot_globs(&self, patterns: &[&str]) -> ProjectSnapshot {
+        let mut files = BTreeMap::new();
+        for pattern in patterns {
+            let full_pattern = format!("{}/{pattern}", self.dir.path().display());
+            for entry in glob::glob(&full_pattern).expect("invalid glob pattern") {
+                let path = entry.expect("glob error");
+                if path.is_file() {
+                    let rel = normalize_path(
+                        &path
+                            .strip_prefix(self.dir.path())
+                            .unwrap()
+                            .to_string_lossy(),
+                    );
+                    let content = read_file_or_binary(&path);
+                    files.insert(rel, content);
+                }
+            }
+        }
+        ProjectSnapshot {
+            files: files.into_iter().collect(),
+        }
+    }
+
     /// Snapshot files matching a glob pattern (relative to project root).
     pub fn snapshot_glob(&self, pattern: &str) -> ProjectSnapshot {
         let full_pattern = format!("{}/{pattern}", self.dir.path().display());
