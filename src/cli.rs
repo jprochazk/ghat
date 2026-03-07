@@ -11,7 +11,7 @@ pub mod update;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "ghat", about = "GitHub Actions Templating system and runtime")]
+#[command(name = "ghat", version, about = "GitHub Actions Templating system and runtime")]
 struct Cli {
     /// Enable verbose output (-v for debug, -vv for trace)
     #[arg(short, long, action = clap::ArgAction::Count, global = true)]
