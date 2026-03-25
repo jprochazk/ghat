@@ -249,7 +249,7 @@ jobs:
       - id: host
         shell: bash
         run: |
-          dist host ${{ needs.plan.outputs.tag-flag }} --steps=upload --steps=release --output-format=json > dist-manifest.json
+          dist host ${{ needs.plan.outputs.tag-flag }} --steps=upload --steps=release --output-format=json --allow-dirty > dist-manifest.json
           echo "artifacts uploaded and released successfully"
           cat dist-manifest.json
           echo "manifest=$(jq -c "." dist-manifest.json)" >> "$GITHUB_OUTPUT"
@@ -275,7 +275,6 @@ jobs:
           PRERELEASE_FLAG: "${{ fromJson(steps.host.outputs.manifest).announcement_is_prerelease && '--prerelease' || '' }}"
           ANNOUNCEMENT_TITLE: "${{ fromJson(steps.host.outputs.manifest).announcement_title }}"
           ANNOUNCEMENT_BODY: "${{ fromJson(steps.host.outputs.manifest).announcement_github_body }}"
-          RELEASE_COMMIT: "${{ github.sha }}"
         run: |
           # Write and read notes from a file to avoid quoting breaking things
           echo "$ANNOUNCEMENT_BODY" > $RUNNER_TEMP/notes.txt
