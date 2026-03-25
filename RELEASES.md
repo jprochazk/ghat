@@ -1,6 +1,9 @@
 # Release process
 
-1. Run `fmt`, `clippy`, and `test`. If anything fails, abort!
+A release should never be done with failing CI. Also run `cargo fmt`, `cargo clippy`, and `cargo test`, and ensure they all pass.
+
+Before starting, determine what the next version should be. We follow semver: Are there any breaking changes since the previous release?
+
 2. Bump version in `Cargo.toml` according to semver, then run `cargo check` to update `Cargo.lock`
 3. Commit the version bump, and tag a new `vX.Y.Z` release (see `git tag` for existing tags)
 4. Push the commit and tag to remote
@@ -9,6 +12,7 @@
 This will publish the source to `crates.io`, so that people can install via `cargo install`.
 
 Asynchronously, CI will build artifacts for all supported platforms, and automatically create a GitHub release.
+You do not need to wait for it, it will happen on its own at some point.
 
 ## Details
 
