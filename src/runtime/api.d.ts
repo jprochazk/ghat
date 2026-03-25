@@ -932,9 +932,9 @@ declare global {
     ? keyof O extends never ? void : { [K in Extract<keyof O, string>]: string }
     : void;
 
-  type WorkflowRunNameContext<Triggers> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
-  type WorkflowConcurrencyContext<Triggers> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
-  type WorkflowEnvContext<Triggers> = GitHubContext<Triggers> & SecretsContext & InputsContext<Triggers> & VarsContext;
+  type WorkflowRunNameContext<Triggers = {}> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
+  type WorkflowConcurrencyContext<Triggers = {}> = GitHubContext<Triggers> & InputsContext<Triggers> & VarsContext;
+  type WorkflowEnvContext<Triggers = {}> = GitHubContext<Triggers> & SecretsContext & InputsContext<Triggers> & VarsContext;
 
   interface Workflow<Triggers> {
     /** Determines when and how the workflow will be triggered. */
@@ -1072,20 +1072,20 @@ declare global {
   // TODO: typed expressions
   type Expression = string;
 
-  interface StepRef<Outputs> {
+  interface StepRef<Outputs = {}> {
     outputs: Outputs;
   }
 
-  type JobStrategyContext<Triggers, Needs> = GitHubContext<Triggers> & NeedsContext<Needs> & VarsContext & InputsContext<Triggers>;
+  type JobStrategyContext<Triggers = {}, Needs = []> = GitHubContext<Triggers> & NeedsContext<Needs> & VarsContext & InputsContext<Triggers>;
 
-  type JobIfContext<Triggers, Needs> = GitHubContext<Triggers> & NeedsContext<Needs> & VarsContext & InputsContext<Triggers>;
+  type JobIfContext<Triggers = {}, Needs = []> = GitHubContext<Triggers> & NeedsContext<Needs> & VarsContext & InputsContext<Triggers>;
 
-  type JobRunsOnContext<Triggers, Needs, Matrix> = GitHubContext<Triggers> & NeedsContext<Needs> & StrategyContext & MatrixContext<Matrix> & VarsContext & InputsContext<Triggers>;
+  type JobRunsOnContext<Triggers = {}, Needs = [], Matrix = {}> = GitHubContext<Triggers> & NeedsContext<Needs> & StrategyContext & MatrixContext<Matrix> & VarsContext & InputsContext<Triggers>;
 
-  type JobEnvContext<Triggers, Needs, Matrix> = JobRunsOnContext<Triggers, Needs, Matrix> & SecretsContext;
+  type JobEnvContext<Triggers = {}, Needs = [], Matrix = {}> = JobRunsOnContext<Triggers, Needs, Matrix> & SecretsContext;
 
   // TODO: steps can reference other steps
-  type StepsContext<Triggers, Needs, Matrix> =
+  type StepsContext<Triggers = {}, Needs = [], Matrix = {}> =
     GitHubContext<Triggers>
     & NeedsContext<Needs>
     & StrategyContext
@@ -1183,7 +1183,7 @@ declare global {
     secrets?: Record<string, string> | "inherit";
   }
 
-  interface WorkflowJobsContext<Triggers> extends GitHubContext<Triggers>, InputsContext<Triggers>, VarsContext {
+  interface WorkflowJobsContext<Triggers = {}> extends GitHubContext<Triggers>, InputsContext<Triggers>, VarsContext {
     // returns a `JobRef`, which can be used as the input to `needs` in other jobs, allowing them to use its outputs.
     job<
       const Name extends string,
@@ -1204,6 +1204,12 @@ declare global {
         ? [WorkflowCallJobOptions<Triggers, UsesTriggers, Needs>?]
         : [WorkflowCallJobOptions<Triggers, UsesTriggers, Needs>],
     ): JobRef<NormalizeId<Name>, ExtractOutputs<UsesTriggers>>;
+
+    /** Returns all jobs defined so far in this workflow. */
+    jobs(): JobRef<string, {}>[];
+
+    /** Returns the name of the current workflow. */
+    workflow_name(): string;
   }
 
   function workflow<const Triggers>(

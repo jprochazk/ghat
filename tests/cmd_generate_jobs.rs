@@ -141,6 +141,76 @@ fn many_jobs_chain() {
 }
 
 #[test]
+fn jobs_returns_all_defined_jobs() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Lint", {
+      runs_on: "ubuntu-latest",
+      steps() { run("cargo clippy") }
+    })
+    ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() { run("cargo build") }
+    })
+    ctx.job("Test", {
+      runs_on: "ubuntu-latest",
+      steps() { run("cargo test") }
+    })
+    ctx.job("All Pass", {
+      runs_on: "ubuntu-latest",
+      needs: ctx.jobs(),
+      if: "!cancelled()",
+      steps() {
+        run("exit 1", { if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')" })
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
+fn workflow_name_returns_name() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("My CI Pipeline", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() { run("cargo build") }
+    })
+    ctx.job(ctx.workflow_name() + " All Pass", {
+      runs_on: "ubuntu-latest",
+      needs: ctx.jobs(),
+      if: "!cancelled()",
+      steps() {
+        run("exit 1", { if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')" })
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
 fn job_outputs_consumed_by_multiple() {
     let p = TestProject::new()
         .init()

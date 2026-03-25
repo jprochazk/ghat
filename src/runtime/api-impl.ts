@@ -466,8 +466,17 @@ declare global {
 
     // Jobs
     const jobs_ctx = build_context(["github", "inputs", "vars"], `${name} > jobs`);
+    const all_job_refs: JobRefInternal[] = [];
     (jobs_ctx as any).job = function(job_name: string, job_def: Job<any, any, any, any>): JobRefInternal {
-      return map_job(job_name, job_def, wf.jobs);
+      const ref = map_job(job_name, job_def, wf.jobs);
+      all_job_refs.push(ref);
+      return ref;
+    };
+    (jobs_ctx as any).jobs = function(): JobRefInternal[] {
+      return [...all_job_refs];
+    };
+    (jobs_ctx as any).workflow_name = function(): string {
+      return name;
     };
     (jobs_ctx as any).uses = function(
       job_name: string,
@@ -491,7 +500,9 @@ declare global {
       if (options?.secrets != null) out_job.secrets = options.secrets;
 
       wf.jobs[job_id] = out_job;
-      return { id: job_id, outputs: context_proxy(`jobs.${job_id}.outputs`) };
+      const ref: JobRefInternal = { id: job_id, outputs: context_proxy(`jobs.${job_id}.outputs`) };
+      all_job_refs.push(ref);
+      return ref;
     };
 
     const jobs_return = definition.jobs(jobs_ctx);
