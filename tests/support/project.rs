@@ -129,10 +129,8 @@ impl TestProject {
     /// (`.github/workflows/**/*`) combined into a single string.
     pub fn generate_snapshot(&self, output: &CommandOutput) -> String {
         let mut result = output.to_string();
-        let files = self.snapshot_globs(&[
-            ".github/ghat/workflows/**/*.ts",
-            ".github/workflows/**/*",
-        ]);
+        let files =
+            self.snapshot_globs(&[".github/ghat/workflows/**/*.ts", ".github/workflows/**/*"]);
         result.push_str(&files.to_string());
         result
     }

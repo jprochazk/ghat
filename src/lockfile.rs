@@ -30,6 +30,12 @@ pub struct Lockfile {
     pub actions: BTreeMap<String, LockedAction>,
 }
 
+impl Default for Lockfile {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Lockfile {
     pub fn new() -> Self {
         Self {

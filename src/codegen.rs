@@ -12,6 +12,12 @@ pub struct ManifestCache {
     entries: BTreeMap<String, ActionManifest>,
 }
 
+impl Default for ManifestCache {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl ManifestCache {
     pub fn new() -> Self {
         Self {
@@ -186,7 +192,7 @@ pub fn generate_action_dts(action_name: &str, manifest: &ActionManifest) -> Stri
 
     // Options parameter
     if input_fields.is_empty() {
-        out.push_str(&format!("    options?: UsesOptions<{{}}>,\n"));
+        out.push_str("    options?: UsesOptions<{}>,\n");
     } else {
         let required_marker = if action_has_required_inputs { "" } else { "?" };
         out.push_str(&format!(

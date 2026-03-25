@@ -183,7 +183,7 @@ pub fn run(
         if let UpdateResult::Updated { name, new, .. } = r {
             let manifest =
                 codegen::get_or_fetch_manifest(&mut cache, &client, name, &new.sha, &new.version)?;
-            codegen::write_action_types(base, name, &manifest)?;
+            codegen::write_action_types(base, name, manifest)?;
         }
     }
 

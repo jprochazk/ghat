@@ -1,8 +1,6 @@
 mod support;
 
-use support::mock_github::{
-    MockGitHubServer, mock_checkout, mock_rust_cache, mock_rust_toolchain,
-};
+use support::mock_github::{MockGitHubServer, mock_checkout, mock_rust_cache, mock_rust_toolchain};
 use support::project::TestProject;
 
 fn server_env(
@@ -123,9 +121,7 @@ fn add_multiple_then_generate() {
 /// Add branch ref action, use in workflow, verify SHA pinning.
 #[test]
 fn add_branch_then_generate() {
-    let server = MockGitHubServer::new()
-        .add(mock_rust_toolchain())
-        .start();
+    let server = MockGitHubServer::new().add(mock_rust_toolchain()).start();
     let p = TestProject::new().init().build();
 
     let add_output = server_env(&p, &["add", "dtolnay/rust-toolchain@stable"], &server);

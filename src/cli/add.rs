@@ -89,7 +89,7 @@ pub fn run(actions: Vec<String>, _auto: bool, github_token: Option<String>) -> m
                     &resolved.sha,
                     &resolved.version,
                 )?;
-                codegen::write_action_types(base, name, &manifest)?;
+                codegen::write_action_types(base, name, manifest)?;
                 super::style::status(
                     "Added",
                     format!("{name} {} ({})", resolved.version, &resolved.sha[..12]),

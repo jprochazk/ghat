@@ -961,7 +961,10 @@ jobs:
     assert_eq!(wc.inputs.len(), 1);
     assert_eq!(wc.inputs["name"].required, Some(true));
     assert_eq!(wc.outputs.len(), 1);
-    assert_eq!(wc.outputs["result"].description.as_deref(), Some("The result"));
+    assert_eq!(
+        wc.outputs["result"].description.as_deref(),
+        Some("The result")
+    );
     assert_eq!(
         wc.outputs["result"].value.as_deref(),
         Some("${{ jobs.work.outputs.out }}")

@@ -275,17 +275,17 @@ pub fn resolve_compatible(
         for release in &page {
             let tag = &release.tag_name;
             let stripped = tag.strip_prefix('v').unwrap_or(tag);
-            if let Ok(ver) = semver::Version::parse(stripped) {
-                if req.matches(&ver) {
-                    let sha = resolve_tag_to_sha(api, owner, repo, tag)?;
-                    return Ok(ResolvedAction {
-                        owner: owner.to_string(),
-                        repo: repo.to_string(),
-                        version: tag.clone(),
-                        sha,
-                        ref_kind: RefKind::Tag,
-                    });
-                }
+            if let Ok(ver) = semver::Version::parse(stripped)
+                && req.matches(&ver)
+            {
+                let sha = resolve_tag_to_sha(api, owner, repo, tag)?;
+                return Ok(ResolvedAction {
+                    owner: owner.to_string(),
+                    repo: repo.to_string(),
+                    version: tag.clone(),
+                    sha,
+                    ref_kind: RefKind::Tag,
+                });
             }
         }
     }
@@ -444,10 +444,10 @@ impl Iterator for ReleasePaginator<'_> {
         };
 
         // Parse Link header for next page
-        if let Some(link) = response.headers().get("link") {
-            if let Ok(link) = link.to_str() {
-                self.next_url = parse_link_next(link);
-            }
+        if let Some(link) = response.headers().get("link")
+            && let Ok(link) = link.to_str()
+        {
+            self.next_url = parse_link_next(link);
         }
 
         let releases: Vec<Release> = match response.body_mut().read_json() {

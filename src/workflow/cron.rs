@@ -101,12 +101,12 @@ impl std::str::FromStr for Cron {
         }
 
         let day_of_the_month = parts.next().ok_or(InvalidCronError)?.parse::<CronField>()?;
-        if day_of_the_month.values().any(|v| v < 1 || v > 31) {
+        if day_of_the_month.values().any(|v| !(1..=31).contains(&v)) {
             return Err(InvalidCronError);
         }
 
         let month = parts.next().ok_or(InvalidCronError)?.parse::<CronField>()?;
-        if month.values().any(|v| v < 1 || v > 12) {
+        if month.values().any(|v| !(1..=12).contains(&v)) {
             return Err(InvalidCronError);
         }
 
@@ -131,7 +131,7 @@ impl std::fmt::Display for CronField {
             CronField::Value(v) => write!(f, "{v}"),
             CronField::Any => write!(f, "*"),
             CronField::Multi { values } => {
-                if let Some(v) = values.get(0) {
+                if let Some(v) = values.first() {
                     write!(f, "{v}")?;
                 }
                 for v in values.iter().skip(1) {

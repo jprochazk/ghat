@@ -16,8 +16,8 @@ pub fn status(label: impl Display, message: impl Display) {
 
     if use_color {
         // Bold green label, right-aligned to 12 chars
-        let _ = write!(out, "\x1b[1;32m{label:>12}\x1b[0m {message}\n");
+        let _ = writeln!(out, "\x1b[1;32m{label:>12}\x1b[0m {message}");
     } else {
-        let _ = write!(out, "{label:>12} {message}\n");
+        let _ = writeln!(out, "{label:>12} {message}");
     }
 }

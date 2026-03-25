@@ -153,7 +153,7 @@ fn line_col_to_span(
 ) -> miette::SourceSpan {
     let offset = line_col_to_offset(source, line, col);
     let end = line_col_to_offset(source, end_line, end_col);
-    miette::SourceSpan::new(offset.into(), (end.saturating_sub(offset)).max(1).into())
+    miette::SourceSpan::new(offset.into(), (end.saturating_sub(offset)).max(1))
 }
 
 fn line_col_to_offset(source: &str, line: u32, col: u32) -> usize {
