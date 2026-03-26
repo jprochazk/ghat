@@ -68,22 +68,7 @@ pub fn run(name: Option<String>) -> miette::Result<()> {
         return Err(miette::miette!("{} already exists", output_path.display()));
     }
 
-    let workflow_name = name
-        .split(['_', '-'])
-        .map(|word| {
-            let mut chars = word.chars();
-            match chars.next() {
-                Some(c) => {
-                    let upper: String = c.to_uppercase().collect();
-                    format!("{upper}{}", chars.as_str())
-                }
-                None => String::new(),
-            }
-        })
-        .collect::<Vec<_>>()
-        .join(" ");
-
-    let contents = TEMPLATE.replace("<WORKFLOW_NAME>", &workflow_name);
+    let contents = TEMPLATE.replace("<WORKFLOW_NAME>", &name);
 
     std::fs::write(&output_path, &contents)
         .into_diagnostic()
