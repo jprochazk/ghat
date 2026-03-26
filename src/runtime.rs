@@ -163,8 +163,19 @@ impl Runtime {
             .into_diagnostic()
             .wrap_err("failed to read source file")?;
 
+        let js_source = if name.ends_with(".ts") {
+            use crate::oxc;
+            let alloc = oxc::allocator();
+            let program = oxc::parse_ts(&alloc, &source)
+                .wrap_err("failed to parse TypeScript")?;
+            let stripped = oxc::strip_type_annotations(&alloc, program, &name);
+            stripped.code
+        } else {
+            source
+        };
+
         self.ctx.with(|ctx| {
-            let promise = js::Module::evaluate(ctx.clone(), name, source)
+            let promise = js::Module::evaluate(ctx.clone(), name, js_source)
                 .catch(&ctx)
                 .into_miette()?;
             promise.finish::<()>().catch(&ctx).into_miette()

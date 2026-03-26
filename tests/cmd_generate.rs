@@ -661,6 +661,65 @@ workflow("CI", {
 }
 
 #[test]
+fn ts_workflow_with_type_annotations() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"function echo(v: string) {
+  run(`echo ${v}`)
+}
+
+workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Test", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        echo("hello")
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
+fn js_workflow_with_type_annotations() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.js",
+            r#"function echo(v: string) {
+  run(`echo ${v}`)
+}
+
+workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Test", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        echo("hello")
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    assert_ne!(output.exit_code, 0);
+    snapshot!(output);
+}
+
+#[test]
 fn context_proxy_direct_return() {
     let p = TestProject::new()
         .init()
