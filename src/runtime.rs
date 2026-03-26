@@ -19,9 +19,17 @@ impl js::loader::Resolver for TsResolver {
             PathBuf::from(name)
         };
 
+        // If the import has no file extension, try `.ts` then `.js`.
+        let (path, fallback) = if path.extension().is_none() {
+            (path.with_extension("ts"), Some(path.with_extension("js")))
+        } else {
+            (path, None)
+        };
+
         // Canonicalize to collapse `..` and `.` segments
         let resolved = path
             .canonicalize()
+            .or_else(|e| fallback.map_or(Err(e), |f| f.canonicalize()))
             .map_err(|e| js::Error::new_loading_message(name, &e.to_string()))?;
 
         Ok(resolved.to_string_lossy().into_owned())

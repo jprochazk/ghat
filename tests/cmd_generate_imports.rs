@@ -127,6 +127,36 @@ workflow("CI", {
     snapshot!(p.generate_snapshot(&output));
 }
 
+#[test]
+fn import_without_extension() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/_helpers.ts",
+            r#"export const RUNNER = "ubuntu-latest"
+"#,
+        )
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"import { RUNNER } from "./_helpers"
+
+workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Build", {
+      runs_on: RUNNER,
+      steps() { run("cargo build") }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
 /// A reusable workflow defined in a shared module, imported by two separate
 /// workflow files. The module should only be evaluated once (module caching).
 #[test]
