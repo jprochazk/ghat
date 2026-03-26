@@ -349,7 +349,7 @@ declare global {
     let strategy: Output.Strategy | undefined;
     let matrix_proxy: any = {};
     if (job_def.strategy != null) {
-      const strategy_ctx = build_context(["github", "needs", "vars", "inputs"], `${name} > strategy`);
+      const strategy_ctx = build_context(["github", "needs", "vars", "inputs"], `strategy`);
       strategy_ctx.needs = build_needs_proxy(needs_refs);
       const raw = resolve_value(job_def.strategy, strategy_ctx);
       strategy = map_strategy(raw);
@@ -360,13 +360,13 @@ declare global {
     // Resolve if (needs: github, needs, vars, inputs)
     let if_condition: string | undefined;
     if (job_def.if != null) {
-      const if_ctx = build_context(["github", "needs", "vars", "inputs"], `${name} > if`);
+      const if_ctx = build_context(["github", "needs", "vars", "inputs"], `if`);
       if_ctx.needs = build_needs_proxy(needs_refs);
       if_condition = resolve_value(job_def.if, if_ctx);
     }
 
     // Resolve runs_on (needs: github, needs, strategy, matrix, vars, inputs)
-    const runs_on_ctx = build_context(["github", "needs", "strategy", "matrix", "vars", "inputs"], `${name} > runs_on`);
+    const runs_on_ctx = build_context(["github", "needs", "strategy", "matrix", "vars", "inputs"], `runs_on`);
     runs_on_ctx.needs = build_needs_proxy(needs_refs);
     runs_on_ctx.matrix = matrix_proxy;
     const runs_on = resolve_value(job_def.runs_on, runs_on_ctx);
@@ -374,14 +374,14 @@ declare global {
     // Resolve env (needs: github, needs, strategy, matrix, vars, secrets, inputs)
     let env: Record<string, string> | undefined;
     if (job_def.env != null) {
-      const env_ctx = build_context(["github", "needs", "strategy", "matrix", "vars", "secrets", "inputs"], `${name} > env`);
+      const env_ctx = build_context(["github", "needs", "strategy", "matrix", "vars", "secrets", "inputs"], `env`);
       env_ctx.needs = build_needs_proxy(needs_refs);
       env_ctx.matrix = matrix_proxy;
       env = resolve_value(job_def.env, env_ctx);
     }
 
     // Build steps context (needs: github, needs, strategy, matrix, job, runner, env, vars, secrets, steps, inputs)
-    const steps_ctx = build_context(["github", "needs", "strategy", "matrix", "job", "runner", "env", "vars", "secrets", "steps", "inputs"], `${name} > steps`);
+    const steps_ctx = build_context(["github", "needs", "strategy", "matrix", "job", "runner", "env", "vars", "secrets", "steps", "inputs"], `steps`);
     steps_ctx.needs = build_needs_proxy(needs_refs);
     steps_ctx.matrix = matrix_proxy;
 
@@ -442,7 +442,7 @@ declare global {
     };
 
     if (definition.run_name != null) {
-      const ctx = build_context(["github", "inputs", "vars"], `${name} > run_name`);
+      const ctx = build_context(["github", "inputs", "vars"], `run_name`);
       wf["run-name"] = resolve_value(definition.run_name, ctx);
     }
 
@@ -455,17 +455,17 @@ declare global {
     }
 
     if (definition.concurrency != null) {
-      const ctx = build_context(["github", "inputs", "vars"], `${name} > concurrency`);
+      const ctx = build_context(["github", "inputs", "vars"], `concurrency`);
       wf.concurrency = map_concurrency(resolve_value(definition.concurrency, ctx));
     }
 
     if (definition.env != null) {
-      const ctx = build_context(["github", "secrets", "inputs", "vars"], `${name} > env`);
+      const ctx = build_context(["github", "secrets", "inputs", "vars"], `env`);
       wf.env = resolve_value(definition.env, ctx);
     }
 
     // Jobs
-    const jobs_ctx = build_context(["github", "inputs", "vars"], `${name} > jobs`);
+    const jobs_ctx = build_context(["github", "inputs", "vars"], `jobs`);
     const all_job_refs: JobRefInternal[] = [];
     (jobs_ctx as any).job = function(job_name: string, job_def: Job<any, any, any, any>): JobRefInternal {
       const ref = map_job(job_name, job_def, wf.jobs);

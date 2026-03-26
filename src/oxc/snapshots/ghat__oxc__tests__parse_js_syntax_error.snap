@@ -3,8 +3,8 @@ source: src/oxc/tests.rs
 expression: "js_err(\"const x = {;\")"
 ---
 
-  × Unexpected token
-   ╭────
- 1 │ const x = {;
-   ·            ─
-   ╰────
+  x Unexpected token
+   ,----
+ 1 | const x = {;
+   :            ^
+   `----

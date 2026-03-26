@@ -310,6 +310,7 @@ impl CommandRunner {
         for (k, v) in &self.envs {
             cmd.env(k, v);
         }
+        cmd.env("__GHAT_TEST", "1");
 
         let output = cmd.output().expect("failed to run ghat");
 

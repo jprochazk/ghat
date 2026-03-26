@@ -20,33 +20,30 @@ pub fn typecheck() -> miette::Result<()> {
         return Ok(());
     }
 
-    let has_errors = diagnostics
-        .iter()
-        .any(|d| matches!(d.category, tsgo::DiagnosticCategory::Error));
+    let report = Report::from_tsgo(diagnostics);
 
-    let errors = TypeCheckErrors::from_diagnostics(diagnostics);
+    let has_errors = report
+        .diagnostics
+        .iter()
+        .any(|d| d.severity == miette::Severity::Error);
 
     if has_errors {
-        Err(miette::Error::new(errors))
+        Err(miette::Error::new(report))
     } else {
-        // Print warnings/suggestions without failing
-        let handler = miette::GraphicalReportHandler::new();
-        let mut buf = String::new();
-        handler
-            .render_report(&mut buf, &errors)
-            .expect("BUG: failed to render diagnostics");
-        eprint!("{buf}");
+        for diagnostic in report.diagnostics {
+            eprintln!("{diagnostic:?}");
+        }
         Ok(())
     }
 }
 
 #[derive(Debug)]
-struct TypeCheckErrors {
-    errors: Vec<TypeCheckError>,
+struct Report {
+    diagnostics: Vec<TypeScriptDiagnostic>,
 }
 
-impl TypeCheckErrors {
-    fn from_diagnostics(diagnostics: Vec<tsgo::Diagnostic>) -> Self {
+impl Report {
+    fn from_tsgo(diagnostics: Vec<tsgo::Diagnostic>) -> Self {
         // Read each source file once
         let mut sources: HashMap<String, Option<miette::NamedSource<String>>> = HashMap::new();
 
@@ -68,7 +65,7 @@ impl TypeCheckErrors {
                     line_col_to_span(content, d.line, d.column, d.end_line, d.end_column)
                 });
 
-                TypeCheckError {
+                TypeScriptDiagnostic {
                     message: d.message,
                     code: d.code,
                     severity: match d.category {
@@ -83,30 +80,38 @@ impl TypeCheckErrors {
             })
             .collect();
 
-        Self { errors }
+        Self {
+            diagnostics: errors,
+        }
     }
 }
 
-impl std::fmt::Display for TypeCheckErrors {
+impl std::fmt::Display for Report {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "type-check failed with {} error(s)", self.errors.len())
+        write!(
+            f,
+            "type-check failed with {} error(s)",
+            self.diagnostics.len()
+        )
     }
 }
 
-impl std::error::Error for TypeCheckErrors {}
+impl std::error::Error for Report {}
 
-impl Diagnostic for TypeCheckErrors {
+impl Diagnostic for Report {
     fn severity(&self) -> Option<miette::Severity> {
         Some(miette::Severity::Error)
     }
 
     fn related<'a>(&'a self) -> Option<Box<dyn Iterator<Item = &'a dyn Diagnostic> + 'a>> {
-        Some(Box::new(self.errors.iter().map(|e| e as &dyn Diagnostic)))
+        Some(Box::new(
+            self.diagnostics.iter().map(|e| e as &dyn Diagnostic),
+        ))
     }
 }
 
 #[derive(Debug)]
-struct TypeCheckError {
+struct TypeScriptDiagnostic {
     message: String,
     code: i32,
     severity: miette::Severity,
@@ -114,15 +119,15 @@ struct TypeCheckError {
     span: Option<miette::SourceSpan>,
 }
 
-impl std::fmt::Display for TypeCheckError {
+impl std::fmt::Display for TypeScriptDiagnostic {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.message)
     }
 }
 
-impl std::error::Error for TypeCheckError {}
+impl std::error::Error for TypeScriptDiagnostic {}
 
-impl Diagnostic for TypeCheckError {
+impl Diagnostic for TypeScriptDiagnostic {
     fn code<'a>(&'a self) -> Option<Box<dyn std::fmt::Display + 'a>> {
         Some(Box::new(format!("TS{}", self.code)))
     }

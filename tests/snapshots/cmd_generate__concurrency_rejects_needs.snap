@@ -6,8 +6,7 @@ exit_code: 1
 ---stderr---
   Evaluating workflow definitions
 Error: 
-  x context 'needs' is not available in 'Bad > concurrency' (available:
-  | github, inputs, vars)
+  x context 'needs' is not available in 'concurrency' (available: github, inputs, vars)
   | 
   | Stack trace:
   |     at get (eval_script:43:96)

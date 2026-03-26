@@ -10,8 +10,7 @@ Error:
 
 Error: TS2307
 
-  x TS2307: Cannot find module './_nonexistent.ts' or its corresponding type
-  | declarations.
+  x TS2307: Cannot find module './_nonexistent.ts' or its corresponding type declarations.
    ,-[[ROOT]/.github/ghat/workflows/bad.ts:1:21]
  1 | import { foo } from "./_nonexistent.ts"
    :                     ^^^^^^^^^^^^^^^^^^^

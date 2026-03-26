@@ -3,8 +3,8 @@ source: src/oxc/tests.rs
 expression: "ts_err(\"let x: = ;\")"
 ---
 
-  × Unexpected token
-   ╭────
- 1 │ let x: = ;
-   ·        ─
-   ╰────
+  x Unexpected token
+   ,----
+ 1 | let x: = ;
+   :        ^
+   `----

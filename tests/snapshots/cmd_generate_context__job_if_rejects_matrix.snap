@@ -6,8 +6,7 @@ exit_code: 1
 ---stderr---
   Evaluating workflow definitions
 Error: 
-  x context 'matrix' is not available in 'Test > if' (available: github,
-  | needs, vars, inputs)
+  x context 'matrix' is not available in 'if' (available: github, needs, vars, inputs)
   | 
   | Stack trace:
   |     at get (eval_script:43:96)

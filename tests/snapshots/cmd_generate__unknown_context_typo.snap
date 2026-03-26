@@ -6,7 +6,7 @@ exit_code: 1
 ---stderr---
   Evaluating workflow definitions
 Error: 
-  x unknown context 'secerts' in 'Bad > run_name'
+  x unknown context 'secerts' in 'run_name'
   | 
   | Stack trace:
   |     at get (eval_script:45:14)

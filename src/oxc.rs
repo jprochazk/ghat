@@ -44,13 +44,9 @@ impl std::error::Error for ParseErrors {}
 
 impl std::fmt::Display for ParseErrors {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let handler =
-            miette::GraphicalReportHandler::new_themed(miette::GraphicalTheme::unicode_nocolor());
         for error in &self.errors {
-            let report = miette::Error::new(error.clone()).with_source_code(self.src.clone());
-            handler
-                .render_report(f, report.as_ref())
-                .map_err(|_| std::fmt::Error)?;
+            let error = error.clone().with_source_code(self.src.clone());
+            writeln!(f, "{error:?}")?;
         }
         Ok(())
     }
