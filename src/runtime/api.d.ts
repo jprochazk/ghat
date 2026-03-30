@@ -531,12 +531,19 @@ declare global {
   interface GithubEventPayloadTypeMap {
     push: PushEventPayload,
     pull_request: PullRequestEventPayload,
-    pull_request_target: PullRequestEventPayload,
     issue_comment: IssueCommentEventPayload,
     schedule: ScheduleEventPayload,
     workflow_dispatch: WorkflowDispatchEventPayload,
     workflow_call: {},
   }
+
+  type TriggersKeys<Triggers> =
+    keyof Triggers extends "pull_request_target" ? Omit<keyof Triggers, "pull_request_target"> | "pull_request" : keyof Triggers;
+
+  type GithubEventContext<Triggers> = {
+    [K in keyof GithubEventPayloadTypeMap as K extends TriggersKeys<Triggers> ? K : never]: GithubEventPayloadTypeMap[K]
+  }
+
 
   // ---- GitHub Context ----
 
@@ -607,10 +614,7 @@ declare global {
      * The full event webhook payload. This object is identical to the webhook payload of the event
      * that triggered the workflow run, and is different for each event.
      */
-    event: {
-      [K in keyof GithubEventPayloadTypeMap as K extends keyof Triggers ? K : never]:
-      GithubEventPayloadTypeMap[K]
-    };
+    event: GithubEventContext<Triggers>;
 
     /**
      * The name of the event that triggered the workflow run.
