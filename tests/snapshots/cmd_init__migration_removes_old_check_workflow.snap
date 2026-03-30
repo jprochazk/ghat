@@ -1,9 +1,10 @@
 ---
 source: tests/cmd_init.rs
-expression: value
+expression: output
 ---
 exit_code: 0
 ---stderr---
+     Removed old .github/workflows/ghat_check.yaml
        Added actions/checkout v4.2.2 (11bd71901bbe)
        Added actions/cache v4.2.0 (ab5e6d0c8710)
        Added actions/upload-artifact v4.6.0 (65c4c4a1ddee)

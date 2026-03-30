@@ -7,8 +7,7 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_deploy.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/deploy.ts ---
 workflow("Deploy", {
   on: triggers({
@@ -61,5 +60,3 @@ jobs:
     steps:
     - id: step_0
       run: echo ${{ inputs.environment }} ${{ inputs.dry_run }}
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

@@ -10,8 +10,7 @@ exit_code: 0
        Wrote .github/workflows/generated_step_outputs.yaml
        Wrote .github/workflows/generated_run_options.yaml
        Wrote .github/workflows/generated_deploy_context.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 6 workflows in [TIME]
+    Finished generated 5 workflows in [TIME]
 --- .github/ghat/workflows/features.ts ---
 
 // --- job needs, outputs, name normalization, if, env, timeout ---
@@ -218,5 +217,3 @@ jobs:
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
     - id: step_1
       run: echo checked out ${{ steps.step_0.outputs.ref }}
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

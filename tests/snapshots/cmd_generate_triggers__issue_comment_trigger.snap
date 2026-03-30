@@ -7,8 +7,7 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_comment_bot.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/comment.ts ---
 workflow("Comment Bot", {
   on: triggers({
@@ -35,5 +34,3 @@ jobs:
     steps:
     - id: step_0
       run: echo comment received
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

@@ -8,8 +8,7 @@ exit_code: 0
   Evaluating workflow definitions
        Wrote .github/workflows/generated_build.yaml
        Wrote .github/workflows/generated_ci.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 3 workflows in [TIME]
+    Finished generated 2 workflows in [TIME]
 --- .github/ghat/workflows/build.ts ---
 const build = workflow("Build", {
   on: triggers({
@@ -103,5 +102,3 @@ jobs:
     steps:
     - id: step_0
       run: echo deploying ${{ needs.build_that_thing.outputs.artifact }}
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

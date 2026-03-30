@@ -7,8 +7,7 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_fan_out.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/fan.ts ---
 workflow("Fan Out", {
   on: triggers({ push: ["main"] }),
@@ -69,5 +68,3 @@ jobs:
     steps:
     - id: step_0
       run: echo deploying ${{ needs.build.outputs.sha }} to prod
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]
