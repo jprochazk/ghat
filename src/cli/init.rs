@@ -54,7 +54,8 @@ const TSCONFIG: &str = r#"{
 }
 "#;
 
-pub fn run(bare: bool, github_token: Option<String>) -> miette::Result<()> {
+pub fn run(github_token: Option<String>) -> miette::Result<()> {
+    let bare = std::env::var("__GHAT_INIT_BARE").is_ok();
     let base = Path::new(super::common::BASE_DIR);
 
     if base.exists() {

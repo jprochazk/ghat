@@ -236,7 +236,8 @@ impl TestProjectBuilder {
 
         if self.init {
             let output = Command::new(env!("CARGO_BIN_EXE_ghat"))
-                .args(["init", "--bare"])
+                .arg("init")
+                .env("__GHAT_INIT_BARE", "1")
                 .current_dir(dir.path())
                 .output()
                 .expect("failed to run ghat init");

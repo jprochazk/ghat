@@ -32,11 +32,7 @@ struct Cli {
 #[derive(Subcommand)]
 enum Command {
     /// Initialize project structure (.github/ghat/)
-    Init {
-        /// Only create the directory structure, without adding default actions
-        #[arg(long)]
-        bare: bool,
-    },
+    Init,
 
     /// Add actions to the lockfile (pinned to commit sha)
     Add {
@@ -104,7 +100,7 @@ pub fn entrypoint() -> miette::Result<()> {
         .init();
 
     match cli.command {
-        Command::Init { bare } => init::run(bare, cli.github_token),
+        Command::Init => init::run(cli.github_token),
         Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
         Command::Rm { actions } => rm::run(actions),
         Command::Update {

@@ -64,15 +64,18 @@ fn updates_type_defs() {
     assert!(diff.is_empty(), "expected no diff, got:\n{diff}");
 }
 
+/// The `.init()` test helper uses __GHAT_INIT_BARE to skip network-dependent
+/// default actions. Verify that it produces a usable project structure.
 #[test]
-fn bare_skips_defaults() {
-    let p = TestProject::new().build();
-    let output = p.ghat(&["init", "--bare"]).run();
-    assert_eq!(output.exit_code, 0);
+fn bare_init() {
+    let p = TestProject::new().init().build();
 
-    // No ghat_check.ts created
+    // Structure exists
+    assert!(p.file_exists(".github/ghat/tsconfig.json"));
+    assert!(p.file_exists(".github/ghat/types/api.d.ts"));
+    assert!(p.file_exists(".github/ghat/ghat.lock"));
+    // No ghat_check.ts or default actions
     assert!(!p.file_exists(".github/ghat/workflows/ghat_check.ts"));
-    // Empty lockfile
     assert_eq!(p.read_file(".github/ghat/ghat.lock"), "");
 }
 
