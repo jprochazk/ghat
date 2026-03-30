@@ -1,4 +1,7 @@
 Swatinem/rust-cache tag:v2.8.2 779680da715d629ac1d338a641029a2f4372abb5
+actions/cache tag:v5.0.4 668228422ae6a00e4ad889ee87cd7109ec5666a7
 actions/checkout tag:v6.0.2 de0fac2e4500dabe0009e67214ff5f5447ce83dd
+actions/download-artifact tag:v8.0.1 3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
 actions/setup-go tag:v6.3.0 4b73464bb391d4059bd26b0524d20df3927bd417
+actions/upload-artifact tag:v7.0.0 bbbca2ddaa5d8feaa63e36b76fdaad77386f024f
 dtolnay/rust-toolchain tag:v1 e97e2d8cc328f1b50210efc529dca0028893a2d9
