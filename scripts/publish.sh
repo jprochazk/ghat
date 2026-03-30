@@ -30,5 +30,6 @@ git commit -am "v$VERSION"
 git tag "v$VERSION"
 git push
 git push origin "v$VERSION"
+cargo publish
 
 echo "Done."
