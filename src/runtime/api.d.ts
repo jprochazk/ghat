@@ -1024,6 +1024,32 @@ declare global {
     paths?: string[];
   }
 
+  type PullRequestTypesTrigger = {
+    types?: (
+      "assigned" |
+      "unassigned" |
+      "labeled" |
+      "unlabeled" |
+      "opened" |
+      "edited" |
+      "closed" |
+      "reopened" |
+      "synchronize" |
+      "converted_to_draft" |
+      "locked" |
+      "unlocked" |
+      "enqueued" |
+      "dequeued" |
+      "milestoned" |
+      "demilestoned" |
+      "ready_for_review" |
+      "review_requested" |
+      "review_request_removed" |
+      "auto_merge_enabled" |
+      "auto_merge_disabled"
+    )[]
+  };
+
   type BaseInput<Required extends boolean> = {
     required?: Required;
     description?: string;
@@ -1040,8 +1066,8 @@ declare global {
 
   interface Trigger<Inputs = {}> {
     push?: string[] | FilteredTrigger;
-    pull_request?: string[] | Omit<FilteredTrigger, "tags">;
-    pull_request_target?: string[] | Omit<FilteredTrigger, "tags">;
+    pull_request?: string[] | Omit<FilteredTrigger, "tags"> & PullRequestTypesTrigger;
+    pull_request_target?: string[] | Omit<FilteredTrigger, "tags"> & PullRequestTypesTrigger;
     issue_comment?: {
       types?: ("created" | "deleted" | "edited" | "pinned" | "unpinned")[];
     };
