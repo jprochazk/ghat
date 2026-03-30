@@ -538,12 +538,12 @@ declare global {
     workflow_call: {},
   }
 
-  type TriggersKeys<Triggers> =
-    keyof Triggers extends "pull_request_target" ? Exclude<keyof Triggers, "pull_request_target"> | "pull_request" : keyof Triggers;
-
   type GithubEventContext<Triggers> = {
-    [K in keyof GithubEventPayloadTypeMap as K extends TriggersKeys<Triggers> ? K : never]: GithubEventPayloadTypeMap[K]
-  }
+    [K in keyof GithubEventPayloadTypeMap as K extends Exclude<keyof Triggers, "pull_request_target"> ? K : never]:
+    GithubEventPayloadTypeMap[K]
+  } & (
+      "pull_request_target" extends keyof Triggers ? { pull_request: GithubEventPayloadTypeMap["pull_request"] } : {}
+    );
 
 
   // ---- GitHub Context ----
