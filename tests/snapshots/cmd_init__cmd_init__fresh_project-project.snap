@@ -250,7 +250,7 @@ actions/upload-artifact tag:v4.6.0 65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08
 --- .github/ghat/tsconfig.json ---
 [324 bytes]
 --- .github/ghat/types/api.d.ts ---
-[41343 bytes]
+[42099 bytes]
 --- .github/ghat/workflows/ghat_check.ts ---
 
 // Feel free to edit this file, subsequent runs of `ghat init` won't regenerate it.
