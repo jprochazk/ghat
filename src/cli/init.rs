@@ -9,20 +9,29 @@ use crate::lockfile::Lockfile;
 const API_DTS: &str = include_str!("../runtime/api.d.ts");
 
 const CHECK_WORKFLOW_TS: &str = r#"
+// Feel free to edit this file, subsequent runs of `ghat init` won't regenerate it.
+
+// For convenience, here are some configuration options:
+/** The runner used for the check job. */
+const RUNNER = "ubuntu-latest";
+/** The download URL, in case you want to use a mirror instead. */
+const DOWNLOAD_URL = "https://github.com/jprochazk/ghat/releases/latest/download/ghat-installer.sh"
+
 workflow("ghat check", {
   on: triggers({
     push: [],
-    pull_request: [],
   }),
 
   jobs(ctx) {
     ctx.job("Check", {
-      runs_on: "ubuntu-latest",
+      runs_on: RUNNER,
 
       steps() {
-        uses("actions/checkout")
-        const URL = "https://github.com/jprochazk/ghat/releases/latest/download/ghat-installer.sh"
-        run(`curl --proto '=https' --tlsv1.2 -LsSf ${URL} | sh`)
+        uses("actions/checkout", {
+            // We only need to look at the latest commit
+            with: { fetch_depth: "1" }
+        })
+        run(`curl --proto '=https' --tlsv1.2 -LsSf ${DOWNLOAD_URL} | sh`)
         run("ghat generate")
         run("git diff --exit-code")
       },
