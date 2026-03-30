@@ -9,8 +9,7 @@ exit_code: 0
        Wrote .github/workflows/generated_shared_build.yaml
        Wrote .github/workflows/generated_ci.yaml
        Wrote .github/workflows/generated_release.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 4 workflows in [TIME]
+    Finished generated 3 workflows in [TIME]
 --- .github/ghat/workflows/_shared.ts ---
 export const build = workflow("Shared Build", {
   on: triggers({
@@ -134,5 +133,3 @@ jobs:
     steps:
     - id: step_0
       run: cargo build --target ${{ inputs.target }}
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

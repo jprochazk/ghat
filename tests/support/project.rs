@@ -19,7 +19,6 @@ pub struct TestProjectBuilder {
 const REDACTED_PATHS: &[&str] = &[
     ".github/ghat/types/api.d.ts",
     ".github/ghat/tsconfig.json",
-    ".github/workflows/ghat_check.yaml",
 ];
 
 /// A snapshot of a project's file tree.
@@ -238,6 +237,7 @@ impl TestProjectBuilder {
         if self.init {
             let output = Command::new(env!("CARGO_BIN_EXE_ghat"))
                 .arg("init")
+                .env("__GHAT_INIT_BARE", "1")
                 .current_dir(dir.path())
                 .output()
                 .expect("failed to run ghat init");

@@ -8,8 +8,7 @@ exit_code: 0
   Evaluating workflow definitions
        Wrote .github/workflows/generated_shared_build.yaml
        Wrote .github/workflows/generated_ci.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 3 workflows in [TIME]
+    Finished generated 2 workflows in [TIME]
 --- .github/ghat/workflows/_shared_build.ts ---
 export const build = workflow("Shared Build", {
   on: triggers({
@@ -87,5 +86,3 @@ jobs:
     steps:
     - id: step_0
       run: cargo build --target ${{ inputs.target }}
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

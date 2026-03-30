@@ -29,7 +29,7 @@ pub fn run(no_check: bool) -> miette::Result<()> {
         .into_diagnostic()
         .wrap_err("failed to create directory")?;
 
-    let count = workflows.len() + 1; // +1 for ghat_check workflow
+    let count = workflows.len();
     for (name, workflow) in workflows {
         let yaml = serde_yaml_ng::to_string(&workflow)
             .into_diagnostic()
@@ -41,9 +41,6 @@ pub fn run(no_check: bool) -> miette::Result<()> {
             .wrap_err("failed to write workflow file")?;
         status("Wrote", output_path.display());
     }
-
-    super::init::write_check_workflow()?;
-    status("Wrote", ".github/workflows/ghat_check.yaml");
 
     let elapsed = start.elapsed();
     status(

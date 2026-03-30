@@ -7,8 +7,7 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_nightly.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/nightly.ts ---
 workflow("Nightly", {
   on: triggers({ schedule: [{ cron: "0 0 * * *" }] }),
@@ -32,5 +31,3 @@ jobs:
     steps:
     - id: step_0
       run: echo nightly cleanup
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

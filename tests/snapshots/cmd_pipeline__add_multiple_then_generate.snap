@@ -6,8 +6,7 @@ exit_code: 0
 ---stderr---
   Evaluating workflow definitions
        Wrote .github/workflows/generated_ci.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/ci.ts ---
 workflow("CI", {
   on: triggers({ push: ["main"] }),
@@ -40,5 +39,3 @@ jobs:
       uses: Swatinem/rust-cache@9d47c6ad4b02e050fd481d890b2ea34778fd09d6
     - id: step_2
       run: cargo build
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]

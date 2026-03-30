@@ -38,6 +38,11 @@ impl MockGitHubServer {
         }
     }
 
+    /// Create a server pre-loaded with multiple mock actions.
+    pub fn from_actions(actions: Vec<MockAction>) -> Self {
+        Self { actions }
+    }
+
     /// Add a mock action to the server.
     pub fn add(mut self, action: MockAction) -> Self {
         self.actions.push(action);
@@ -327,6 +332,112 @@ outputs:
         branch_refs: HashMap::new(),
         manifests,
     }
+}
+
+/// Helper to create a simple mock action with a single latest tag.
+fn simple_mock(owner: &str, repo: &str, tag: &str, sha: &str, manifest: &str) -> MockAction {
+    let mut refs = HashMap::new();
+    refs.insert(tag.into(), ("commit".into(), sha.into()));
+    let mut manifests = HashMap::new();
+    manifests.insert(tag.into(), manifest.into());
+    MockAction {
+        owner: owner.into(),
+        repo: repo.into(),
+        latest_release: tag.into(),
+        all_releases: vec![tag.into()],
+        refs,
+        tags: HashMap::new(),
+        branch_refs: HashMap::new(),
+        manifests,
+    }
+}
+
+pub fn mock_cache() -> MockAction {
+    simple_mock(
+        "actions",
+        "cache",
+        "v4.2.0",
+        "ab5e6d0c87105b4c9c2047343972218f562e4319",
+        r#"
+name: Cache
+description: Cache artifacts like dependencies and build outputs.
+inputs:
+  path:
+    description: A list of files, directories, and wildcard patterns to cache and restore.
+    required: true
+  key:
+    description: An explicit key for restoring and saving the cache.
+    required: true
+  restore-keys:
+    description: An ordered multiline string listing the prefix-matched keys for restoring stale cache.
+    required: false
+outputs:
+  cache-hit:
+    description: A boolean value to indicate an exact match was found for the primary key.
+"#,
+    )
+}
+
+pub fn mock_upload_artifact() -> MockAction {
+    simple_mock(
+        "actions",
+        "upload-artifact",
+        "v4.6.0",
+        "65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08",
+        r#"
+name: Upload a Build Artifact
+description: Upload a build artifact that can be used by subsequent workflow steps.
+inputs:
+  name:
+    description: Artifact name.
+    required: false
+    default: artifact
+  path:
+    description: A file, directory or wildcard pattern that describes what to upload.
+    required: true
+  retention-days:
+    description: Duration after which artifact will expire in days.
+    required: false
+outputs:
+  artifact-id:
+    description: The ID of the artifact that was uploaded.
+  artifact-url:
+    description: The URL of the artifact that was uploaded.
+"#,
+    )
+}
+
+pub fn mock_download_artifact() -> MockAction {
+    simple_mock(
+        "actions",
+        "download-artifact",
+        "v4.2.0",
+        "fa0a91b85d4f404e444e00e005971372dc801d16",
+        r#"
+name: Download a Build Artifact
+description: Download a build artifact that was previously uploaded in the workflow.
+inputs:
+  name:
+    description: Name of the artifact to download. If unspecified, all artifacts for the run are downloaded.
+    required: false
+  path:
+    description: Destination path. Defaults to $GITHUB_WORKSPACE.
+    required: false
+  run-id:
+    description: The id of the workflow run where the desired download artifact was uploaded to.
+    required: false
+"#,
+    )
+}
+
+/// All mocks needed for `ghat init` default actions.
+pub fn mock_default_actions() -> Vec<MockAction> {
+    vec![
+        mock_checkout(),
+        mock_cache(),
+        mock_upload_artifact(),
+        mock_download_artifact(),
+    ]
 }
 
 /// dtolnay/rust-toolchain - uses branch refs (e.g. "stable", "nightly")

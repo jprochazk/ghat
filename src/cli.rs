@@ -100,7 +100,7 @@ pub fn entrypoint() -> miette::Result<()> {
         .init();
 
     match cli.command {
-        Command::Init => init::run(),
+        Command::Init => init::run(cli.github_token),
         Command::Add { actions, auto } => add::run(actions, auto, cli.github_token),
         Command::Rm { actions } => rm::run(actions),
         Command::Update {

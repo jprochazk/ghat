@@ -7,8 +7,7 @@ exit_code: 0
     Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_ci.yaml
-       Wrote .github/workflows/ghat_check.yaml
-    Finished generated 2 workflows in [TIME]
+    Finished generated 1 workflow in [TIME]
 --- .github/ghat/workflows/ci.ts ---
 workflow("CI", {
   on: triggers({ push: {} }),
@@ -31,5 +30,3 @@ jobs:
     steps:
     - id: step_0
       run: cargo build
---- .github/workflows/ghat_check.yaml ---
-[326 bytes]
