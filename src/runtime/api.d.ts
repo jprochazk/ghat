@@ -538,7 +538,7 @@ declare global {
   }
 
   type TriggersKeys<Triggers> =
-    keyof Triggers extends "pull_request_target" ? Omit<keyof Triggers, "pull_request_target"> | "pull_request" : keyof Triggers;
+    keyof Triggers extends "pull_request_target" ? Exclude<keyof Triggers, "pull_request_target"> | "pull_request" : keyof Triggers;
 
   type GithubEventContext<Triggers> = {
     [K in keyof GithubEventPayloadTypeMap as K extends TriggersKeys<Triggers> ? K : never]: GithubEventPayloadTypeMap[K]
