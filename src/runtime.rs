@@ -116,6 +116,7 @@ impl RuntimeBuilder {
                 js::context::intrinsic::Promise,
                 js::context::intrinsic::Proxy,
                 js::context::intrinsic::MapSet,
+                js::context::intrinsic::Json,
             )>(&rt)
             .into_diagnostic()?;
             rt.set_loader(TsResolver, TsLoader);
@@ -174,8 +175,7 @@ impl Runtime {
         let js_source = if name.ends_with(".ts") {
             use crate::oxc;
             let alloc = oxc::allocator();
-            let program = oxc::parse_ts(&alloc, &source)
-                .wrap_err("failed to parse TypeScript")?;
+            let program = oxc::parse_ts(&alloc, &source).wrap_err("failed to parse TypeScript")?;
             let stripped = oxc::strip_type_annotations(&alloc, program, &name);
             stripped.code
         } else {

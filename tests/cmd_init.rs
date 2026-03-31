@@ -1,7 +1,7 @@
 mod support;
 
-use support::mock_github::{MockGitHubServer, mock_default_actions};
 use support::TestProject;
+use support::mock_github::{MockGitHubServer, mock_default_actions};
 
 fn init_with_server(
     p: &TestProject,
