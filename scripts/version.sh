@@ -7,5 +7,9 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
+cargo insta test
+cargo clippy
+cargo fmt --check
+
 sed -i -E "0,/^version = \".*\"/s//version = \"$1\"/" Cargo.toml
 cargo check
