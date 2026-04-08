@@ -156,3 +156,35 @@ fn workflow_env_can_use_secrets() {
     let output = p.ghat(&["generate"]).run();
     snapshot!(p.generate_snapshot(&output));
 }
+
+#[test]
+fn expr_can_interpolate_multiple_context_values() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    const build = ctx.job("Build", {
+      runs_on: "ubuntu-latest",
+      steps() {
+        return { changed: "true" }
+      }
+    })
+
+    ctx.job("Deploy", {
+      runs_on: "ubuntu-latest",
+      needs: [build],
+      if: (ctx) => expr`${ctx.github.ref} == 'refs/heads/main' && ${ctx.needs.build.outputs.changed} == 'true'`,
+      steps() { run("echo deploy") }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate", "--no-check"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}

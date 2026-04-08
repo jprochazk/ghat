@@ -4,6 +4,7 @@ declare global {
   function __define_workflow(name: string, workflow: Output.Workflow): void;
   function __normalize_id(name: string): string;
   var __GHAT_ACTION_MAPPINGS: Record<string, { inputs?: Record<string, string>; outputs?: Record<string, string> }> | undefined;
+  const __LEAF_EXPR_TO_STRING: unique symbol;
 }
 
 (function() {
@@ -19,6 +20,7 @@ declare global {
         if (prop === Symbol.toPrimitive) {
           return () => `\${{ ${prefix} }}`;
         }
+        if (prop === __LEAF_EXPR_TO_STRING) return () => prefix;
         if (typeof prop === "symbol") return undefined;
         return context_proxy(`${prefix}.${prop}`);
       },
@@ -522,10 +524,34 @@ declare global {
     return { __workflow_ref: true, __path: `./.github/workflows/generated_${id}.yaml` };
   }
 
+  function expr_builtin(strings: TemplateStringsArray, ...values: any[]): string {
+    let content = "";
+    for (let i = 0; i < strings.length; i++) {
+      content += strings[i];
+      if (i >= values.length) continue;
+
+      const value = values[i];
+      const leaf_expr_to_string =
+        value != null && (typeof value === "object" || typeof value === "function")
+          ? value[__LEAF_EXPR_TO_STRING]
+          : undefined;
+
+      if (typeof leaf_expr_to_string === "function") {
+        content += leaf_expr_to_string();
+      } else {
+        content += String(value);
+      }
+    }
+    return `\${{ ${content} }}`;
+  }
+
   globalThis.workflow = workflow;
   globalThis.triggers = triggers;
   globalThis.input = input_builtin;
   globalThis.matrix = matrix;
   globalThis.run = run_builtin;
   globalThis.uses = uses_builtin as any;
+
+  (globalThis as any).__LEAF_EXPR_TO_STRING = Symbol('__LEAF_EXPR_TO_STRING');
+  globalThis.expr = expr_builtin;
 })();

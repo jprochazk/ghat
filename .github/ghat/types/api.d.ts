@@ -1248,6 +1248,9 @@ declare global {
     definition: Workflow<Triggers>,
   ): WorkflowRef<Triggers>;
 
+  /** Build a GitHub Actions expression from a tagged template literal. */
+  function expr(strings: TemplateStringsArray, ...values: unknown[]): Expression;
+
   // ---- Step builtins ----
 
   interface StepOptions {

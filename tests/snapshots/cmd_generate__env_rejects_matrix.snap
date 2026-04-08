@@ -9,9 +9,9 @@ Error:
   x context 'matrix' is not available in 'env' (available: github, secrets, inputs, vars)
   | 
   | Stack trace:
-  |     at get (eval_script:43:96)
+  |     at get (eval_script:44:96)
   |     at env (.github/ghat/workflows/bad.ts:3:1)
-  |     at resolve_value (eval_script:63:41)
-  |     at workflow (eval_script:455:27)
+  |     at resolve_value (eval_script:64:41)
+  |     at workflow (eval_script:456:27)
   |     at <anonymous> (.github/ghat/workflows/bad.ts:2:6)
   |

@@ -9,9 +9,9 @@ Error:
   x context 'needs' is not available in 'concurrency' (available: github, inputs, vars)
   | 
   | Stack trace:
-  |     at get (eval_script:43:96)
+  |     at get (eval_script:44:96)
   |     at concurrency (.github/ghat/workflows/bad.ts:3:1)
-  |     at resolve_value (eval_script:63:41)
-  |     at workflow (eval_script:446:51)
+  |     at resolve_value (eval_script:64:41)
+  |     at workflow (eval_script:447:51)
   |     at <anonymous> (.github/ghat/workflows/bad.ts:2:6)
   |
