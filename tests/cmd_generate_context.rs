@@ -185,6 +185,6 @@ fn expr_can_interpolate_multiple_context_values() {
         )
         .build();
 
-    let output = p.ghat(&["generate", "--no-check"]).run();
+    let output = p.ghat(&["generate"]).run();
     snapshot!(p.generate_snapshot(&output));
 }

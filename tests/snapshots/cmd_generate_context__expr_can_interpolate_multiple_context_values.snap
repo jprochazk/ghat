@@ -4,6 +4,7 @@ expression: p.generate_snapshot(&output)
 ---
 exit_code: 0
 ---stderr---
+    Checking workflow definitions
   Evaluating workflow definitions
        Wrote .github/workflows/generated_ci.yaml
     Finished generated 1 workflow in [TIME]
