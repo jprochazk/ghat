@@ -61,6 +61,12 @@ After `ghat init`, your repo looks like this:
 
 Files prefixed with `_` (e.g. `_utils.ts`) are not evaluated as workflows, but can be imported by other workflow files.
 
+## Updating to new versions
+
+Install the new version of `ghat`, using any of the available channels.
+
+Afterwards, migrate your project by running `ghat init`.
+
 ## API
 
 ### `workflow(name, definition)`
