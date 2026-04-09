@@ -416,6 +416,13 @@ pub struct Job {
     )]
     pub timeout_minutes: Option<u32>,
 
+    #[serde(
+        rename = "continue-on-error",
+        default,
+        skip_serializing_if = "Option::is_none"
+    )]
+    pub continue_on_error: Option<bool>,
+
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub strategy: Option<Strategy>,
 

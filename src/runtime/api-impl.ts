@@ -413,6 +413,7 @@ declare global {
     if (if_condition != null) out_job.if = if_condition;
     if (env != null) out_job.env = env;
     if (job_def.timeout_minutes != null) out_job["timeout-minutes"] = job_def.timeout_minutes;
+    if (job_def.continue_on_error != null) out_job["continue-on-error"] = job_def.continue_on_error;
     if (strategy != null) out_job.strategy = strategy;
 
     // Map step return value to job outputs

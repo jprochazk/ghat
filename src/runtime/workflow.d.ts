@@ -114,6 +114,7 @@ export interface Job {
   defaults?: Defaults;
   concurrency?: Concurrency;
   "timeout-minutes"?: number;
+  "continue-on-error"?: boolean;
   strategy?: Strategy;
   outputs?: Record<string, string>;
   steps?: Step[];

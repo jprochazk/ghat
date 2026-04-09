@@ -211,6 +211,30 @@ fn workflow_name_returns_name() {
 }
 
 #[test]
+fn job_continue_on_error() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/ci.ts",
+            r#"workflow("CI", {
+  on: triggers({ push: ["main"] }),
+  jobs(ctx) {
+    ctx.job("Unstable", {
+      runs_on: "ubuntu-latest",
+      continue_on_error: true,
+      steps() { run("echo might fail") }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
 fn job_outputs_consumed_by_multiple() {
     let p = TestProject::new()
         .init()

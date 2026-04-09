@@ -1170,6 +1170,7 @@ declare global {
     if?: ValueOrFactory<Expression, JobIfContext<Triggers, Needs>>;
     env?: ValueOrFactory<Record<string, string>, JobEnvContext<Triggers, Needs, Matrix>>;
     timeout_minutes?: number;
+    continue_on_error?: boolean;
 
     steps(ctx: StepsContext<Triggers, Needs, Matrix>): Outputs | void;
   }
