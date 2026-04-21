@@ -537,13 +537,25 @@ declare global {
     workflow_call: {},
   }
 
-  type GithubEventContext<Triggers> = {
-    [K in keyof GithubEventPayloadTypeMap as K extends Exclude<keyof Triggers, "pull_request_target"> ? K : never]:
-    GithubEventPayloadTypeMap[K]
-  } & (
-      "pull_request_target" extends keyof Triggers ? { pull_request: GithubEventPayloadTypeMap["pull_request"] } : {}
-    );
+  type EventNameForContext<Triggers> =
+    Extract<keyof Triggers, keyof GithubEventPayloadTypeMap>
+    | ("pull_request_target" extends keyof Triggers ? "pull_request" : never);
 
+  type EventPayloadUnion<Triggers> =
+    GithubEventPayloadTypeMap[EventNameForContext<Triggers>];
+
+  type KeysOfUnion<T> = T extends unknown ? keyof T : never;
+
+  type MergeUnion<T> = {
+    [K in KeysOfUnion<T>]:
+    T extends unknown
+    ? K extends keyof T
+    ? T[K]
+    : never
+    : never;
+  };
+
+  type GithubEventContext<Triggers> = MergeUnion<EventPayloadUnion<Triggers>>;
 
   // ---- GitHub Context ----
 

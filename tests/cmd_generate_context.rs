@@ -188,3 +188,103 @@ fn expr_can_interpolate_multiple_context_values() {
     let output = p.ghat(&["generate"]).run();
     snapshot!(p.generate_snapshot(&output));
 }
+
+#[test]
+fn pull_request_event_fields_work_without_narrowing() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/pr.ts",
+            r#"workflow("PR", {
+  on: triggers({
+    pull_request: { types: ["opened", "synchronize"] }
+  }),
+  jobs(ctx) {
+    ctx.job("Check", {
+      runs_on: "ubuntu-latest",
+      if: (ctx) => expr`${ctx.github.event.pull_request.head.ref} == 'main'`,
+      steps(ctx) {
+        run("echo checking", {
+          env: {
+            PR_REF: `${ctx.github.event.pull_request.head.ref}`,
+            PR_NUMBER: `${ctx.github.event.pull_request.number}`,
+          },
+        })
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
+fn pull_request_target_uses_pull_request_payload_shape() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/pr_target.ts",
+            r#"workflow("PR Target", {
+  on: triggers({
+    pull_request_target: { types: ["opened"] }
+  }),
+  jobs(ctx) {
+    ctx.job("Check", {
+      runs_on: "ubuntu-latest",
+      if: (ctx) => expr`${ctx.github.event.pull_request.head.ref} != ''`,
+      steps(ctx) {
+        run("echo target", {
+          env: {
+            HEAD_REF: `${ctx.github.event.pull_request.head.ref}`,
+            BASE_REF: `${ctx.github.event.pull_request.base.ref}`,
+          },
+        })
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
+
+#[test]
+fn merged_event_context_allows_multi_trigger_access_without_narrowing() {
+    let p = TestProject::new()
+        .init()
+        .file(
+            ".github/ghat/workflows/mixed.ts",
+            r#"workflow("Mixed", {
+  on: triggers({
+    pull_request: { types: ["opened"] },
+    issue_comment: { types: ["created"] },
+  }),
+  jobs(ctx) {
+    ctx.job("Check", {
+      runs_on: "ubuntu-latest",
+      if: (ctx) => expr`${ctx.github.event.pull_request.head.ref} != '' && ${ctx.github.event.comment.body} != ''`,
+      steps(ctx) {
+        run("echo mixed", {
+          env: {
+            PR_REF: `${ctx.github.event.pull_request.head.ref}`,
+            COMMENT_BODY: `${ctx.github.event.comment.body}`,
+          },
+        })
+      }
+    })
+  }
+})
+"#,
+        )
+        .build();
+
+    let output = p.ghat(&["generate"]).run();
+    snapshot!(p.generate_snapshot(&output));
+}
